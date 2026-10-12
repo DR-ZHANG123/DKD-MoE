@@ -71,6 +71,21 @@ def severity_matched(P, sm):
     return pd.DataFrame(bal), pd.DataFrame(res), pd.DataFrame(pairs, columns=["DM_noCKD", "DKD", "distance"])
 
 
+def composition_given_readout(P, covs, egfr):
+    """Expert contributions compared between groups at equal total readout: OLS (HC3) of the standardized
+    contribution on group (reference HKD) and the standardized readout, without and with the covariates and eGFR
+    category, in the recruitment-site disease groups; DKD minus diabetes without CKD from the same model."""
+    rows = []
+    d0 = P[P.group.isin(["DKD", "HKD", "HKD_withDM", "DM_noCKD"])].dropna(subset=["age_ord", "male", egfr]).copy()
+    d0["r"] = (d0.moe - d0.moe.mean()) / d0.moe.std()
+    for comp in ("M3", "M3_train_only", "M1"):
+        d = d0.copy(); d["y"] = (d[comp] - d[comp].mean()) / d[comp].std()
+        for name, f in (("readout", "y ~ C(group, Treatment('HKD')) + r"),
+                        ("readout_covariates_egfr", f"y ~ C(group, Treatment('HKD')) + r + {' + '.join(covs)} + {egfr}")):
+            rows += [dict(x, component=comp) for x in ols_rows(d, f, name, comp)]
+    return pd.DataFrame(rows)
+
+
 def main():
     cfg = load_cfg("expr"); pc = cfg["groups_clinical"]; out = result_dir("expr_diabetes_groups")
     P = participant_table(cfg, pc["min_site_participants"]).join(readout_table(), how="inner")
@@ -94,6 +109,9 @@ def main():
         models += ols_rows(de, f"y ~ diabetes + ckd + {cov} + {pc['egfr_covariate']}", "factorial_adjusted_egfr", score)
         # diabetes effect without CKD vs HKD, adjusted for eGFR (DM_noCKD has higher eGFR by definition)
     T = pd.DataFrame(tests); M = pd.DataFrame(models)
+    CR = composition_given_readout(P, pc["group_covariates"], pc["egfr_covariate"])
+    CR.to_csv(out / "composition_given_readout.tsv", sep="\t", index=False)
+    print(CR[CR.term.isin(["DKD", "DM_noCKD", "DKD_minus_DM_noCKD"])].drop(columns="formula").round(3).to_string())
     Bal, Res, Pairs = severity_matched(P, cfg["severity_matching"])
     Bal.to_csv(out / "matched_balance.tsv", sep="\t", index=False); Res.to_csv(out / "matched_tests.tsv", sep="\t", index=False)
     Pairs.to_csv(out / "matched_pairs.tsv", sep="\t", index=False)
@@ -105,7 +123,7 @@ def main():
     write_provenance("expr_diabetes_groups", [result_dir("expr_readout") / "participant_scores.tsv",
                      result_dir("bench_supervised_single") / "donor_scores.tsv"],
                      [out / "participant_table.tsv", out / "group_tests.tsv", out / "group_models.tsv", out / "matched_balance.tsv",
-                      out / "matched_tests.tsv", out / "matched_pairs.tsv"], cfg["seed"], cfg)
+                      out / "matched_tests.tsv", out / "matched_pairs.tsv", out / "composition_given_readout.tsv"], cfg["seed"], cfg)
 
 
 if __name__ == "__main__":

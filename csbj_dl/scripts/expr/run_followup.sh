@@ -33,6 +33,7 @@ CSBJ_DEVICE=$DEV python $S/expr/nested_calibration.py      > $L/nested_calibrati
 CSBJ_DEVICE=$DEV python $S/expr/trainonly_experts.py       > $L/trainonly_experts.log 2>&1
 CSBJ_DEVICE=$DEV python $S/expr/heldout_exchange_genes.py  > $L/heldout_exchange_genes.log 2>&1
 CSBJ_DEVICE=$DEV python $S/expr/nonmoe_components.py       > $L/nonmoe_components.log 2>&1
+CSBJ_DEVICE=$DEV python $S/expr/m3_signature.py            > $L/m3_signature.log 2>&1
 # diabetes groups, clinical models, robustness of the readout, signatures restricted by cellular source
 python $S/expr/diabetes_groups.py                          > $L/diabetes_groups.log 2>&1
 python $S/expr/clinical_models.py                          > $L/clinical_models.log 2>&1

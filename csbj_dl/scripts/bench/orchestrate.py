@@ -15,7 +15,7 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parents[0] / "common"))
 from cdl import CDL, load_cfg, result_dir  # noqa: E402
 
-LOG = CDL / "logs"
+LOG = CDL / "logs"; LOG.mkdir(parents=True, exist_ok=True)
 PY = sys.executable
 lock = threading.Lock()
 
