@@ -1,0 +1,78 @@
+# align module: H&E patch <-> Visium spot expression contrastive alignment (csbj_dl)
+# every tunable parameter of csbj_dl/scripts/align/*; scripts never hardcode
+seed: 20261010
+seeds: [0, 1, 2, 3, 4]                 # model seeds; results reported as mean and range across seeds
+device: cuda:3
+embed_batch: 16                        # ViT inference batch for 01_embed_new (shared GPU)
+
+paths:
+  splits: csbj_dl/config/splits.tsv                       # written by the expr module
+  expr_prep: csbj_dl/results/expr_prep                    # optional HVG list (hvg*.tsv / genes*.tsv)
+  new_sections: csbj_dl/results/data_visium/section_table.tsv
+  emb_existing: data/processed/histology_embeddings       # stage 11a outputs (read-only)
+  emb_new: /path/to/project016_data/processed/csbj_dl/align_embeddings
+  external_sections: csbj_dl/results/data_visium/external_section_table.tsv
+  external_regions: csbj_dl/results/data_visium/gse339455_spot_regions.tsv.gz
+  cache: /path/to/project016_data/csbj_dl_ckpt/align/cache
+  ckpt: /path/to/project016_data/csbj_dl_ckpt/align
+
+data:
+  n_hvg: 3000                 # used only when hvg_source = visium (seurat_v3 on KPMP training spots)
+  hvg_source: expr_prep       # expr module KPMP PT-cell HVGs (csbj_dl/results/expr_prep/hvg_genes.tsv), restricted to genes on both Visium platforms
+  hvg_require_external: true  # restrict candidate genes to those measured on GSE211785 Visium (no zero-filling)
+  min_spots_section: 50       # sections with fewer embedded spots are not used
+  target_sum: 10000.0          # log1p(CP10k)
+  primary_contrast: [DKD, HKD]
+  # GSE211785 donor with discordant diagnosis between sources (project016 CLAUDE.md): excluded
+  exclude_participants: [HK2874]
+
+model:
+  emb_dim: 1024               # phikon-v2 CLS
+  proj_dim: 128
+  img_hidden: [512]
+  expr_hidden: [1024, 512]
+  dropout: 0.1
+  init_temperature: 0.07
+  max_logit_scale: 100.0
+
+train:
+  epochs: 60
+  steps_per_epoch: 200
+  batch_size: 256
+  lr: 1.0e-3
+  weight_decay: 1.0e-4
+  batch_modes: [within_section, across_sections]   # how in-batch negatives are drawn
+  primary_batch_mode: within_section
+  val_frac_participants: 0.15  # inner validation participants (from training folds) for early stopping
+  patience: 8
+  oom_retries: 600           # shared GPU: wait 60 s and retry on CUDA OOM
+
+eval:
+  topk: [1, 5, 50]
+  global_pool: 1024           # cross-section retrieval: true partner + (pool-1) random held-out spots
+  n_global_queries: 2000      # per evaluation set and seed
+  shuffle_baseline: within_section   # baseline model trained on pairs permuted within each section
+
+interpret:
+  pt_rich_top_frac: 0.20      # = config/run.yaml visium.pt_rich_top_frac (PT-lineage marker score, within section)
+  min_pt_rich_spots: 20       # participant needs this many PT-rich embedded spots to be scored
+  morph_features: [white_frac, hema_frac, nuclei_per_1e4px_tissue, eosin_mean, hema_mean, eosin_frac, tissue_frac]
+  n_example_patches: 16       # per extreme (top/bottom) for patch grids
+  n_attr_steps: 16            # integrated-gradient steps on pixels (gradient x input when 1)
+  # external cohort inputs standardised with its own statistics (label-free; see 03c_external_calibrated)
+  external_calibration: cohort
+
+# matched-resolution track (ALIGN_TRACK=lowres): GSE339455 publishes only the down-sampled H&E
+histology_lowres:
+  target_um_per_px: 4.0       # coarsest GSE339455 hires image (2.9-4.0 um/px); all cohorts resampled to it
+  field_um: 224               # spot-centred field (56 px at 4 um/px), resized to histology.patch_px
+  stain_normalise: true       # Reinhard LAB matching of each section to the median KPMP section (label-free)
+
+tracks:
+  lowres:
+    paths:
+      emb_dir: /path/to/project016_data/processed/csbj_dl/align_embeddings_lowres
+      cache: /path/to/project016_data/csbj_dl_ckpt/align_lowres/cache
+      ckpt: /path/to/project016_data/csbj_dl_ckpt/align_lowres
+      external_sections: csbj_dl/results/data_visium/external_section_table.tsv
+      external_regions: csbj_dl/results/data_visium/gse339455_spot_regions.tsv.gz

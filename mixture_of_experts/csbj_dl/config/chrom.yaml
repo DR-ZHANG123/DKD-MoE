@@ -1,0 +1,119 @@
+# chrom module: the expression model's DKD-vs-HKD axis read in chromatin (same-nucleus RNA-ATAC pairs)
+# Every tunable lives here; scripts in csbj_dl/scripts/chrom/ read it. Chromatin-derived quantities are
+# reported as chromatin-level evidence only and never used to validate expression results.
+seed: 20261011
+n_folds: 5
+
+paths:
+  bulk_dir: /path/to/project016_data/processed/csbj_dl
+  multiome_rna: /path/to/project016_data/processed/csbj_dl/multiome_rna.h5ad
+  multiome_atac: /path/to/project016_data/processed/csbj_dl/multiome_atac.h5ad
+  multiome_lib: /path/to/project016_data/processed/csbj_dl/multiome_lib      # per-library gene activity (*_gact.h5ad)
+  consensus_peaks: csbj_dl/results/data_multiome/consensus_peaks.tsv.gz
+  library_table: csbj_dl/results/data_multiome/library_table.tsv
+  gse211785_atac: /path/to/project016_data/processed/csbj_dl/gse211785_atac.h5ad   # gene activity only (no public fragments)
+  gse211785_meta: data/processed/GSE211785_PreSCVI.h5ad                                     # authors' cell annotation (Cluster_Idents)
+  gse195460_atac: /path/to/project016_data/processed/csbj_dl/gse195460_atac.h5ad
+  gse195460_gact: /path/to/project016_data/processed/csbj_dl/gse195460_atac_geneactivity.h5ad
+  kpmp_sn: data/processed/KPMP_sn_qc_counts.h5ad
+  kpmp_sn_labels: csbj_dl/results/expr_labels/kpmp_cell_labels_sn.tsv.gz
+  kpmp_sn_atlas: csbj_dl/results/data_annotation/kpmp_cell_labels_sn.tsv.gz
+  splits: csbj_dl/config/splits.tsv
+  hvg: csbj_dl/results/expr_prep/hvg_genes.tsv
+  expr_readout: csbj_dl/results/expr_readout/participant_scores.tsv
+  expr_meta_units: csbj_dl/results/expr_meta/units.tsv
+  expr_meta: csbj_dl/results/expr_meta/meta_experts.tsv
+  expr_ckpt: /path/to/project016_data/csbj_dl_ckpt/expr
+  ckpt_dir: /path/to/project016_data/csbj_dl_ckpt/chrom
+  gtf: /path/to/project016_data/raw/kpmp_csbj_dl/reference/gencode.v32.primary_assembly.annotation.gtf.gz
+  genome_fa: /path/to/project016_data/raw/reference/hg38/hg38.fa
+  genome_fa_gz: /path/to/project016_data/raw/reference/hg38/hg38.fa.gz
+  genome_url: https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.fa.gz
+
+labels:
+  # Multiome GEX nuclei are matched to the KPMP snRNA object by participant + barcode (the KPMP snRNA
+  # release contains the Multiome GEX libraries); matched nuclei inherit the KPMP-internal label
+  # (atlas or KPMP-trained classifier, csbj_dl/results/expr_labels). Unmatched nuclei receive the
+  # same recipe's classifier label (scripts/lib/annotate.py fit on atlas-labelled KPMP sn cells).
+  match_min_count_r: 0.9        # matched pair accepted when total counts agree (Pearson over matched nuclei reported)
+  healthy_pt: [PT-S1, PT-S2, PT-S3, PT-S1/S2, PT-S2/S3, PT_S1, PT_S2, PT_S3]
+  injured_pt: [aPT, frPT, iPT]
+  classifier_min_class: 50
+  # external snATAC: GSE211785 authors' Cluster_Idents; GSE195460 by label transfer on gene activity,
+  # classifier trained on KPMP Multiome gene activity with the RNA-side labels (checked on GSE211785)
+  ga_n_hvg: 3000
+  ga_n_pcs: 50
+  ga_max_per_class: 3000
+
+rna:
+  device: auto                  # auto = the visible GPU with the most free memory
+  min_cells: 20                 # injured-PT nuclei per participant for a participant readout
+  expr_prefix_cv: cvw           # cross-fitted fold models (participant's own fold held out)
+  expr_K: 6
+  expr_wc: 10.0
+  seeds: [1, 2, 3, 4, 5]
+
+atac:
+  # peak encoder input: binarised peaks -> TF-IDF (log1p(tf * 1e4 * idf)) -> truncated SVD (LSI), fit on the
+  # training-fold PT nuclei only; the first component is dropped if |r| with log fragments exceeds the cut
+  min_frac_peak: 0.005          # peak kept if open in >= this fraction of training PT nuclei
+  n_lsi: 100
+  lsi_fit_cells: 60000
+  depth_r_cut: 0.5
+  # gene-activity encoder input (used where only gene activity exists, i.e. GSE211785): expression HVGs
+  # with gene activity in KPMP Multiome, GSE211785 and GSE195460; log1p(CP10k over these genes), z by
+  # training statistics
+  ga_scale: 10000.0
+
+align:
+  d_hidden: 256
+  d_proj: 64
+  dropout: 0.1
+  rna_embedding: h              # fixed MoE backbone output (256-d)
+  batch_size: 256               # nuclei per batch, all from one library (negatives within library)
+  epochs: 40
+  val_frac_participants: 0.15  # training participants held aside for early stopping (best validation InfoNCE epoch)
+  lr: 1.0e-3
+  weight_decay: 1.0e-4
+  temp_init: 0.07
+  max_logit_scale: 100.0
+  cells: [healthy_PT, injured_PT]
+  retrieval_pool: 100           # candidates per query for top-k accuracy (true partner + 99 from the same library)
+  retrieval_repeats: 5
+  topk: [1, 5, 10]
+  features: [peaks, gact]
+
+head:
+  ridge_alpha: 1.0              # ridge on the standardised ATAC embedding -> RNA-side readout (training folds only)
+  train_cells: [injured_PT]    # the readout is defined on injured-PT nuclei (set before the complete Multiome run)
+  eval_cells: injured_PT
+
+external:
+  min_cells: 20                 # injured-PT nuclei per donor
+  comparisons:
+    gse211785: [[DKD, HKD], [DKD, Control], [HKD, Control]]
+    gse195460: [[DKD, Control]]
+  features:
+    gse211785: [gact]
+    gse195460: [peaks, gact]
+
+kpmp_comparisons: [[DKD, HKD], [DKD, Reference], [HKD, Reference], [DKD, HKD_withDM], [HKD_withDM, HKD]]
+
+attrib:
+  ig_steps: 32
+  max_cells_per_participant: 300
+  # IG over TF-IDF peak inputs; baseline = participant-balanced mean injured-PT profile of HKD training
+  # participants; attributions averaged over injured-PT nuclei of DKD training participants
+  # (participant-balanced); per model z-scored, then averaged over folds x seeds
+  n_top: 1000
+  nearest_gene_max_kb: 500
+
+motif:
+  jaspar_release: JASPAR2024
+  collection: CORE
+  tax_group: vertebrates
+  pvalue: 1.0e-4
+  bg_ratio: 5                   # GC-matched background peaks per foreground peak
+  gc_bins: 20
+  pseudocount: 0.8
+  report: [RELA, REL, NFKB1, NFKB2, STAT3, FOS, JUN, FOS::JUN, JUNB, FOSL2, ATF3, NR3C1, HNF4A, HNF1A, HNF1B]

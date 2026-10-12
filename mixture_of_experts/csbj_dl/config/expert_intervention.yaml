@@ -1,0 +1,41 @@
+# In-silico expert intervention on the five final models (scripts/expr/expert_intervention.py).
+# Model, data paths and pseudobulk settings come from expr.yaml; only the intervention settings live here.
+seed: 20261010
+cap_cells_per_unit: 300        # injured-PT cells sampled per participant x technology
+min_cells_per_unit: 20         # as the participant readout (expr.yaml prep.min_cells_per_participant)
+n_boot: 5000                   # participant bootstrap for confidence intervals of means
+device: cpu
+threads: 32
+# interventions: diagnosis of the cells, source meta-expert, destination (meta-expert or 'nonrep' = each
+# non-reproducible unit of that model separately, averaged)
+interventions:
+  - {name: DKD_M3_to_M1, group: DKD, src: M3, dst: M1, role: main}
+  - {name: HKD_M1_to_M3, group: HKD, src: M1, dst: M3, role: main}
+  - {name: DKD_M3_to_M2, group: DKD, src: M3, dst: M2, role: control}
+  - {name: DKD_M3_to_nonrep, group: DKD, src: M3, dst: nonrep, role: control}
+  - {name: HKD_M1_to_M2, group: HKD, src: M1, dst: M2, role: control}
+  - {name: HKD_M1_to_nonrep, group: HKD, src: M1, dst: nonrep, role: control}
+specificity_pairs:
+  - [DKD_M3_to_M1, DKD_M3_to_M2]
+  - [DKD_M3_to_M1, DKD_M3_to_nonrep]
+  - [HKD_M1_to_M3, HKD_M1_to_M2]
+  - [HKD_M1_to_M3, HKD_M1_to_nonrep]
+gene_groups:
+  complement: [C3, C1S, C1R, CFH]
+  matrix: [VCAN, LAMA4, CD44, TGM2]
+  tnf_family: [TNFRSF11B, TNFSF10, CD70]
+  tubular_signature_down: [SLC22A5, SLC7A7, ATP1A1, MIOX, DPEP1, CDHR5, CYP4A11, SLC16A12]
+  tubular_markers_not_in_signature: [GPX3, CUBN, PCK1, SLC34A1]
+  glucocorticoid_responsive: [FKBP5, ZBTB16, TSC22D3]
+# Held-out expert analysis (scripts/expr/heldout_experts.py): the cross-validation models of the final procedure
+# (cvw) scored on their held-out participants. Experts of each fold model are matched to the reproducible experts
+# of the final models (M1-M3) by the correlation of routing probabilities on a common cell sample (Hungarian
+# assignment, accepted when r >= match_min_r). Exchanges use the signature built without the held-out fold
+# (results/expr_transfer/fold_signatures.tsv, construction readout_assoc); every ordered expert pair of the model is
+# evaluated so that the main exchange can be ranked against all other exchanges of the same model.
+heldout:
+  match_cells: 20000
+  match_min_r: 0.5
+  signature_construction: readout_assoc
+  no_expert_variant: supervised_single_z    # latent-shift comparison in the supervised model without experts
+  n_random_directions: 50
