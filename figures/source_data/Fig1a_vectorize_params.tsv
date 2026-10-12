@@ -1,9 +1,0 @@
-icon	crop_w	crop_h	svg_bytes	colormode	hierarchical	mode	filter_speckle	color_precision	layer_difference	corner_threshold	length_threshold	max_iterations	splice_threshold	path_precision	upscale	source
-kidney	262	327	562765	color	stacked	spline	6	6	16	60	4.0	10	45	3	2	icons_v2.png
-tubule	272	267	509017	color	stacked	spline	6	6	16	60	4.0	10	45	3	2	icons_v2.png
-nuclei	263	265	477197	color	stacked	spline	6	6	16	60	4.0	10	45	3	2	icons_v2.png
-network	354	234	673048	color	stacked	spline	6	6	16	60	4.0	10	45	3	2	icons_v2.png
-padlock	207	279	210748	color	stacked	spline	6	6	16	60	4.0	10	45	3	2	icons_v2.png
-slide	364	230	372610	color	stacked	spline	6	6	16	60	4.0	10	45	3	2	icons_v2.png
-he	305	286	1596280	color	stacked	spline	6	6	16	60	4.0	10	45	3	2	icons_v2.png
-clinical	320	254	283632	color	stacked	spline	6	6	16	60	4.0	10	45	3	2	icons_v2.png

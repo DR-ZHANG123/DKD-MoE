@@ -1,5 +1,0 @@
-analysis	gene_set	label	n_genes	n_sign_agree	frac_agree	binom_p
-original	disc_dE_fdr10	Original	189	149	0.7883597883597884	2.837763614735529e-16
-original	disc_dE_fdr10_non_technical	Technical genes excluded	187	147	0.786096256684492	7.078407555210068e-16
-ribo_adjusted_both	disc_dE_fdr10	Ribosome-adjusted (both cohorts)	136	93	0.6838235294117647	1.0844842695429074e-05
-ribo_adjusted_both	orig_disc_dE_fdr10	Original discovery vs adjusted KPMP	189	128	0.6772486772486772	6.183755033734791e-07

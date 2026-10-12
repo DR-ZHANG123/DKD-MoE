@@ -1,6 +1,0 @@
-source	accession	url	files_used	role
-GEO	GSE211785	https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE211785	sc/sn metadata; PreSCVI h5ad (raw counts); ST counts rds; ST metadata; Visium H&E tif + scalefactor json (series + RAW.tar)	discovery; same-section histology
-GEO	GSE195460	https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE195460	11 snRNA filtered_feature_bc_matrix.h5; series matrix (eGFR, IFTA, GS)	independent snRNA replication
-GEO	GSE104954	https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE104954	series matrices GPL22945, GPL24120	tubulointerstitial cross-disease arrays
-Zenodo	19868428	https://zenodo.org/records/19868428	spatial_adata_xenium_cosmx_zenodo.h5ad; Diagnosis.xlsx	independent spatial validation
-Europe PMC / Springer / MGI	PMC7355049; PMC10356613; PMC8044133; PMC11592391; MGI HOM	see data/raw/published_signatures/MANIFEST.tsv (URLs + md5, written by scripts/stages/00c_download_published_signatures.sh)	Kirita 2020 PNAS Dataset S2 + full text; Lake 2023 Nature Supplementary Tables 10/12/13/29; Muto 2021 Nat Commun ESM 4/8 + full text; Abedini 2024 Nat Genet Supplementary Tables (ST8) + full text; MGI HOM_MouseHumanSequence.rpt	published PT injury-state signatures (stage 14c)

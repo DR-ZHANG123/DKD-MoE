@@ -117,22 +117,22 @@ robustness:                 # 12a-12c (technical-axis, Zenodo gene-level spatial
   zenodo_min_cells: 20
   clinical_min_n: 10
 
-visium:                     # stages 10a/10b (worker A); iPT-rich spot rule fixed before scoring
+visium:                     # stages 10a/10b
   marker_min_cells: 20
   marker_min_log2cpm: 3
   n_markers: 30
   marker_min_t: 4
   min_genes: 5
-  ipt_rich_top_frac: 0.20   # unused: first iPT-rich rule, failed positive control (see 10_visium_common)
+  ipt_rich_top_frac: 0.20
   min_spots_participant: 50
   min_spots_section: 20
   deconv_markers: 50
   deconv_min_cp10k: 2
-  pt_rich_min_share: 0.5    # unused: absolute NNLS rule, mis-calibrated across platforms
+  pt_rich_min_share: 0.5
   pt_rich_top_frac: 0.20    # PT-rich spots = top 20% of a section by PT-lineage marker score
 
-histology:                    # worker stage 11 (same-section H&E)
-  encoder: owkin/phikon-v2    # ungated ViT-L pathology foundation model (HF), frozen
+histology:                    # stage 11 (same-section H&E)
+  encoder: owkin/phikon-v2    # ungated ViT-L pathology foundation model (HF), fixed
   encoder_revision: 2ae989a9c40cffaa27f0a6cb29cc94d1d6f9a5fd
   field_um: 112               # square field centred on the 55-um spot (spot + context)
   patch_px: 224               # resized input -> 0.5 um/px
@@ -146,7 +146,7 @@ histology:                    # worker stage 11 (same-section H&E)
   min_sections_prediction: 10
   min_orientation_auc: 0.9     # in-tissue vs off-tissue spot tissue-fraction AUC required to register a Loupe image
 
-wsi:                          # worker stage 13 (KPMP whole-slide H&E / PAS, participant level)
+wsi:                          # stage 13 (KPMP whole-slide H&E / PAS, participant level)
   target_um_per_px: 0.5       # tiles read at level 0 and resized to this scale
   tile_px: 224                # -> 112 um field
   thumb_downsample: 32        # tissue mask resolution
@@ -160,7 +160,7 @@ wsi:                          # worker stage 13 (KPMP whole-slide H&E / PAS, par
   min_tiles_slide: 100
   cv_folds: 10
   n_jobs: 48                  # parallel workers for permutation nulls
-  # primary analysis reported in the main text (fixed before the full run); other stain/tileset/modality
+  # primary analysis reported in the main text; other stain/tileset/modality
   # combinations are sensitivity analyses in the supplementary table
   primary: {stain: HE, tileset: all, modality: sn, target: "DKDiPT_up | SharedInjury_up, IF%"}
   n_perm: 1000
@@ -233,3 +233,8 @@ exposure_trend:
 injury_intensity:
   signature: Abedini2024_iPT_ST8
   n_perm: 10000
+marker_links:                 # stage 16: per-DKD-donor leave-out, modality overlap, marker score vs inflammatory pathways
+  pathways: [HALLMARK_IL6_JAK_STAT3_SIGNALING, HALLMARK_TNFA_SIGNALING_VIA_NFKB, HALLMARK_INTERFERON_GAMMA_RESPONSE,
+             HALLMARK_INFLAMMATORY_RESPONSE]
+  gmt: data/raw/reference/h.all.v2024.1.Hs.symbols.gmt
+  n_boot: 2000

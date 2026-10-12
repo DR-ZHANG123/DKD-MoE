@@ -1,8 +1,0 @@
-check	auc
-PT_lineage_score: PT/iPT-labelled vs other spots	0.8453935567353954
-NNLS PT_share: PT/iPT-labelled vs other spots	0.8576416235079507
-prop_iPT: iPT vs PT_S1-3 spots	0.5655536819911092
-injury_index: iPT vs PT_S1-3 spots	0.7819519721754111
-SharedInjury_up: iPT vs PT_S1-3 spots	0.7661870562037402
-fraction of PT_rich spots with PT/iPT author label	0.614743072370191
-fraction of other spots with PT/iPT author label	0.1528829647581541

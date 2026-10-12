@@ -1,9 +1,0 @@
-set	n_set	n_measured
-DEonly_down	8.0	4.0
-DEonly_up	12.0	4.0
-DKDiPT_down	8.0	7.0
-DKDiPT_up	12.0	7.0
-SharedInjury_down	50.0	31.0
-SharedInjury_up	50.0	36.0
-healthyPT_marker	30.0	27.0
-iPT_marker	30.0	26.0

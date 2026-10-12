@@ -1,5 +1,0 @@
-modality	contrast	refit_vs_07c_lfc_pearson	sign_agree_nb_vs_deseq2_all_genes	pearson_nb_vs_deseq2_all_genes	sign_agree_nb_glm_fixed_dispersion_disc_dE_fdr10	sign_agree_nb_glm_fixed_dispersion_shared_injury_genes	sign_agree_log2_mean_ratio_norm_disc_dE_fdr10	sign_agree_log2_mean_ratio_norm_shared_injury_genes	passes
-sn	DKD_vs_HKD	0.9999999999999999	0.9981017997750281	0.9766158037651422	1.0	1.0	0.8783068783068783	0.9493670886075949	True
-sn	DKD_vs_HKD_adj_egfr_lower	0.9999999999999999	0.9988751406074241	0.9964168166198337	1.0	1.0			True
-sc	DKD_vs_HKD	1.0	0.998220640569395	0.7741505581891417	1.0	1.0	0.9425287356321839	0.9512195121951219	True
-sc	DKD_vs_HKD_adj_egfr_lower	0.9999999999999998	0.9993409779886648	0.7941372800139354	1.0	1.0			True

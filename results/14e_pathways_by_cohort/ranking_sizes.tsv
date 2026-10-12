@@ -1,9 +1,0 @@
-ranking	gene_filter	n_genes
-discovery_SN	full	17478
-discovery_SN	excl_technical	16951
-discovery_SN_ribo_adj	full	17478
-discovery_SN_ribo_adj	excl_technical	16951
-KPMP_sn	full	14224
-KPMP_sn	excl_technical	13693
-KPMP_sn_ribo_adj	full	14224
-KPMP_sn_ribo_adj	excl_technical	13693

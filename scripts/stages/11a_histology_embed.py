@@ -1,4 +1,4 @@
-"""11a_histology_embed: spot-centred H&E patches -> frozen-encoder embeddings + interpretable
+"""11a_histology_embed: spot-centred H&E patches -> fixed-encoder embeddings + interpretable
 morphology features, for GSE211785 Visium (same-section H&E) and KPMP Visium (full-res tif).
 
 Idempotent: a section is skipped when its npz exists. KPMP tifs still downloading are skipped

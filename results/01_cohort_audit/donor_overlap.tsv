@@ -1,6 +1,0 @@
-donor	dx_GSE211785_sc	dx_GSE211785_visium	dx_zenodo	diagnosis_concordant	age	sex	scRNA	snRNA	n_rna_cells	snATAC	visium	visium_HE_image	cosmx	xenium	gfr_band_zenodo	n_sources
-HK2844	DKD	DKD	DKD	True	62.0	Female	0	1	8195	1	1	1	1	0	<30	3
-HK2873		DKD	DKD	True	71.0	Female	0	0	0	0	1	1	1	0	30-60	2
-HK2874		Control	CKD	False	45.0	Male	0	0	0	0	1	1	1	0	>60	2
-HK2924	Control		Control	True	67.0	Male	1	0	2955	0	0	0	1	0	>60	2
-HK3035		DKD	DKD	True	62.0	Male	0	0	0	0	1	1	1	0	30-60	2

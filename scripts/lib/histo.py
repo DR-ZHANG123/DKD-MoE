@@ -1,4 +1,4 @@
-"""Histology helpers: spot-centred patch extraction, interpretable H&E features, frozen encoder.
+"""Histology helpers: spot-centred patch extraction, interpretable H&E features, fixed encoder.
 
 Patch geometry: a square field of `field_um` micrometres centred on the spot, cropped at native
 resolution (um/px from spot_diameter_fullres = 55 um) and resized to `patch_px` pixels.
@@ -56,7 +56,7 @@ def he_features(p: np.ndarray, cfg: dict, bg: np.ndarray | None = None) -> dict:
 
 
 class Encoder:
-    """Frozen pathology foundation encoder (CLS token of a ViT, HF transformers)."""
+    """Fixed pathology foundation encoder (CLS token of a ViT, HF transformers)."""
 
     def __init__(self, name: str, revision: str, device: str = "cuda"):
         import torch
