@@ -18,7 +18,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from joblib import Parallel, delayed
-from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import StratifiedKFold, StratifiedGroupKFold
 from statsmodels.miscmodels.ordinal_model import OrderedModel
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "common"))
@@ -82,6 +82,41 @@ def oof_rep(d, y, cols, score, folds, seed):
     return ll["cov"] / len(d), ll["full"] / len(d)
 
 
+def paired_rep(d, y, cols, a, b, folds, seed, groups=None):
+    """Cross-validated gain per participant of readouts a and b over the covariates, on the same partition
+    (grouped by participant when the rows are a bootstrap resample)."""
+    if groups is None:
+        it = StratifiedKFold(folds, shuffle=True, random_state=seed).split(d, d[y])
+    else:
+        it = StratifiedGroupKFold(folds, shuffle=True, random_state=seed).split(d, d[y], groups)
+    ll = {"cov": 0.0, "a": 0.0, "b": 0.0}
+    for tr, te in it:
+        A, B = d.iloc[tr], d.iloc[te]
+        if A[y].nunique() < B[y].nunique() or not set(B[y]) <= set(A[y]):
+            return None
+        for k, cc in (("cov", cols), ("a", [a] + cols), ("b", [b] + cols)):
+            Xa, mu, sd = design(A, cc); Xb, _, _ = design(B, cc, mu, sd)
+            Xb = Xb.reindex(columns=Xa.columns, fill_value=0.0)
+            r, cats = fit_po(A[y], Xa)
+            pr = r.model.predict(r.params, exog=Xb.values)
+            idx = pd.Categorical(B[y], categories=cats).codes
+            ll[k] += float(np.log(np.clip(pr[np.arange(len(B)), idx], 1e-12, 1)).sum())
+    n = len(d)
+    return (ll["a"] - ll["cov"]) / n, (ll["b"] - ll["cov"]) / n
+
+
+def paired_boot(d, y, cols, a, b, folds, repeats, seed):
+    rng = np.random.default_rng(seed)
+    idx = rng.integers(0, len(d), len(d))
+    db = d.iloc[idx].reset_index(drop=True); grp = idx
+    res = [paired_rep(db, y, cols, a, b, folds, seed + k, groups=grp) for k in range(repeats)]
+    res = [r for r in res if r is not None]
+    if not res:
+        return None
+    res = np.array(res)
+    return float((res[:, 0] - res[:, 1]).mean())
+
+
 def oof_loglik(d, y, cols, score, folds, repeats, seed, n_jobs):
     """Mean out-of-fold log-likelihood per participant, covariates only vs covariates + readout (repeated K-fold)."""
     r = Parallel(n_jobs=n_jobs)(delayed(oof_rep)(d, y, cols, score, folds, seed + k) for k in range(repeats))
@@ -102,7 +137,7 @@ def main():
     a = ap.parse_args()
     cfg = load_cfg("expr"); pc = cfg["groups_clinical"]["clinical"]; out = result_dir("expr_clinical_models")
     P = participant_table(cfg, cfg["groups_clinical"]["min_site_participants"]).join(readout_table(), how="inner")
-    scores = ["moe", "no_experts", "M1", "M3", "sup_injured", "sup_patient"]
+    scores = ["moe", "no_experts", "M1", "M3", "sup_injured", "sup_patient", "M1_train_only", "M3_train_only", "moe_train_z"]
     for f in a.extra:
         E = pd.read_csv(f, sep="\t", dtype={"participant": str}).set_index("participant")
         P = P.join(E); scores += list(E.columns)
@@ -132,6 +167,24 @@ def main():
                     cvs.append({"band": b, "covariates": cname, "readout": s, "n": len(d),
                                 **oof_loglik(d, y, cov, s, pc["cv_folds"], pc["cv_repeats"], cfg["seed"], pc["n_jobs"])})
         print("done", b, flush=True)
+    # paired comparison of cross-validated gains on identical partitions, with a participant bootstrap
+    PG = []
+    cov = pc["covariate_sets"]["diagnosis_egfr"]
+    d = C.dropna(subset=["alb_ord"] + sorted({x for p in pc["paired_pairs"] for x in p}) + [c for c in cov if c not in CAT])
+    for ra, rb in pc["paired_pairs"]:
+        reps = Parallel(n_jobs=pc["n_jobs"])(delayed(paired_rep)(d, "alb_ord", cov, ra, rb, pc["cv_folds"], cfg["seed"] + k)
+                                             for k in range(pc["cv_repeats"]))
+        reps = np.array([r for r in reps if r is not None]); diff = reps[:, 0] - reps[:, 1]
+        bs = Parallel(n_jobs=pc["n_jobs"])(delayed(paired_boot)(d, "alb_ord", cov, ra, rb, pc["cv_folds"], pc["paired_gain_repeats"],
+                                                               cfg["seed"] + 1000 + k) for k in range(pc["paired_gain_boot"]))
+        bs = np.array([x for x in bs if x is not None])
+        PG.append({"band": "albuminuria_band", "covariates": "diagnosis_egfr", "readout_a": ra, "readout_b": rb, "n": len(d),
+                   "gain_a": reps[:, 0].mean(), "gain_b": reps[:, 1].mean(), "gain_difference": diff.mean(),
+                   "frac_repeats_a_better": float((diff > 0).mean()), "n_boot": len(bs),
+                   "boot_ci_low": np.quantile(bs, 0.025), "boot_ci_high": np.quantile(bs, 0.975),
+                   "boot_frac_le_0": float((bs <= 0).mean())})
+        print("paired", ra, rb, flush=True)
+    pd.DataFrame(PG).to_csv(out / "paired_gain.tsv", sep="\t", index=False)
     M, B, V = pd.DataFrame(rows), pd.DataFrame(boots), pd.DataFrame(cvs)
     M.to_csv(out / "models.tsv", sep="\t", index=False); B.to_csv(out / "bootstrap.tsv", sep="\t", index=False)
     V.to_csv(out / "cv_incremental.tsv", sep="\t", index=False)
@@ -151,7 +204,7 @@ def main():
     pd.set_option("display.width", 250); pd.set_option("display.max_rows", 300)
     print(M.round(3).to_string()); print(B.round(3).to_string()); print(V.round(4).to_string()); print(pd.DataFrame(J).round(3).to_string())
     write_provenance("expr_clinical_models", [result_dir("expr_readout") / "participant_scores.tsv"] + [Path(f) for f in a.extra],
-                     [out / f for f in ("models.tsv", "bootstrap.tsv", "cv_incremental.tsv", "missing.tsv", "joint.tsv")],
+                     [out / f for f in ("models.tsv", "bootstrap.tsv", "cv_incremental.tsv", "missing.tsv", "joint.tsv", "paired_gain.tsv")],
                      cfg["seed"], cfg, extra={"readouts": scores})
 
 

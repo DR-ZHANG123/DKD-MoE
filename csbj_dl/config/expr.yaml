@@ -262,7 +262,10 @@ groups_clinical:
     cv_folds: 5
     cv_repeats: 50
     n_jobs: 48
-    resampled_readouts: [moe, no_experts, M3, M1]   # bootstrap and cross-validated value only for these
+    resampled_readouts: [moe, no_experts, M3, M1, M3_train_only]   # bootstrap and cross-validated value only for these
+    paired_gain_boot: 500         # participant bootstrap of the paired cross-validated gain (repeats per resample below)
+    paired_gain_repeats: 10
+    paired_pairs: [[M3, no_experts], [M3, moe], [M3_train_only, no_experts]]
 # Cell annotation, cell quality, technology agreement and non-PT RNA checks (scripts/expr/readout_robustness.py)
 robustness:
   min_cells_subset: 10          # injured-PT cells per participant x technology in annotation / quality subsets
@@ -283,3 +286,8 @@ robustness:
 pt_signature:
   min_pt_ratio: 0.5             # injured-PT mean >= this fraction of the highest non-PT compartment, sc and sn
   constructions: [pt_intrinsic, marker_adjusted, pt_intrinsic_marker_adjusted]
+# DKD versus diabetes without CKD after matching on injury extent, kidney function and age (diabetes_groups.py)
+severity_matching:
+  covariates: [injured_fraction, egfr_ord, age_ord]
+  ratio: 2                      # DKD participants per participant with diabetes without CKD, without replacement
+  readouts: [moe, no_experts, M1, M3, M3_train_only]

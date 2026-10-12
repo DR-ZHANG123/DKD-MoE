@@ -16,7 +16,7 @@ from scipy import stats
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "common"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from cdl import load_cfg, result_dir, write_provenance  # noqa: E402
-from clinical import band_order, ordinal_fit, BANDS  # noqa: E402
+from clinical_routing import band_order, ordinal_fit, BANDS  # noqa: E402
 
 
 def main():

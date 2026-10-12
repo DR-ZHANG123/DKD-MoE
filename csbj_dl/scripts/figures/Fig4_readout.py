@@ -4,8 +4,9 @@
 group (results/expr_diabetes_groups/{participant_table,group_tests}.tsv);
 (b) DKD versus HKD within single-cell and single-nucleus data (results/expr_readout/{participant_scores,
 donor_level_tests}.tsv);
-(c) group differences from HKD in standardized readout, unadjusted, adjusted for injured-cell fraction, cell number,
-age, sex, technology set and recruitment site, and additionally for eGFR band (results/expr_diabetes_groups/group_models.tsv);
+(c) group differences in the standardized readout and in the standardized HKD- and DKD-weighted expert contributions,
+adjusted for injured-cell fraction, cell number, age, sex, technology set, recruitment site and eGFR band
+(results/expr_diabetes_groups/group_models.tsv);
 (d) held-out contributions of the HKD-weighted (M1) and DKD-weighted (M3) experts by group
 (results/expr_heldout_experts/{contributions,contribution_tests}.tsv)."""
 from __future__ import annotations
@@ -84,23 +85,24 @@ def forest(ax, labels, est, lo, hi, colors, diamond_idx=None, ref=0.0):
 
 
 def panel_c(ax):
-    M = S.read("expr_diabetes_groups/group_models.tsv"); M = M[M.readout == "moe"]
-    lab = {"unadjusted": "unadjusted", "adjusted": "adjusted", "adjusted_egfr": "+ eGFR band"}
+    M = S.read("expr_diabetes_groups/group_models.tsv")
+    sets = [("moe", "Readout"), ("M1", "HKD-weighted expert"), ("M3", "DKD-weighted expert")]
+    terms = [("DKD", "DKD vs HKD"), ("DM_noCKD", "DM, no CKD vs HKD"), ("DKD_minus_DM_noCKD", "DKD vs DM, no CKD")]
+    col = {"DKD": S.GROUP_COL["DKD"], "DM_noCKD": S.GROUP_COL["DM_noCKD"], "DKD_minus_DM_noCKD": "#7A1F22"}
     rows = []
-    for g in ["DKD", "DM_noCKD", "HKD_withDM"]:
-        for m, l in lab.items():
-            r = M[(M.model == m) & (M.term == g)].iloc[0]
-            rows.append(dict(group=g, model=m, label=f"{S.GROUP_LABEL[g].replace(chr(10), ' ')}, {l}", beta=r.beta,
-                             lo=r.ci_low, hi=r.ci_high, p=r.p, n=int(r.n)))
+    for sc, sl in sets:
+        for t, tl in terms:
+            r = M[(M.readout == sc) & (M.model == "adjusted_egfr") & (M.term == t)].iloc[0]
+            rows.append(dict(readout=sc, term=t, label=f"{sl}: {tl}", beta=r.beta, lo=r.ci_low, hi=r.ci_high, p=r.p, n=int(r.n)))
     d = S.src_out(pd.DataFrame(rows), "Fig4_c_models")
-    y = forest(ax, d.label, d.beta, d.lo, d.hi, [S.GROUP_COL[g] for g in d.group])
+    y = forest(ax, d.label, d.beta, d.lo, d.hi, [col[t] for t in d.term])
     xr = d.hi.max() + 0.12
     for yi, p in zip(y, d.p):
         ax.text(xr, yi, S.fmt_p(p), va="center", ha="left", fontsize=5.6)
     for k in (3, 6):
         ax.axhline(y[k] + 0.5, color="#DDDDDD", lw=0.6)
-    ax.set_xlim(min(-0.8, d.lo.min() - 0.1), xr + 0.75)
-    ax.set_xlabel(f"Difference from HKD (SD of readout, 95% CI)\nn = {d.n.iloc[0]} participants")
+    ax.set_xlim(min(-0.9, d.lo.min() - 0.1), xr + 0.75)
+    ax.set_xlabel(f"Adjusted difference (SD, 95% CI)\nn = {d.n.iloc[0]} participants")
 
 
 def panel_d(axs):

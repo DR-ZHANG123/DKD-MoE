@@ -39,3 +39,9 @@ heldout:
   signature_construction: readout_assoc
   no_expert_variant: supervised_single_z    # latent-shift comparison in the supervised model without experts
   n_random_directions: 50
+# Expert identities defined from training participants only (scripts/expr/trainonly_experts.py): within each part,
+# the five partition models are aligned to the first by routing correlation on training cells (Hungarian); the
+# DKD-weighted expert is the aligned expert with the largest mean classifier weight among experts used more by
+# injured than by healthy training cells, the HKD-weighted expert the one with the most negative mean weight.
+trainonly:
+  match_cells: 20000

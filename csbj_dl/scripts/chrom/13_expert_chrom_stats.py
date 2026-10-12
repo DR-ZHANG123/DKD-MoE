@@ -9,7 +9,8 @@ score (05_chrom_readout) and participant ATAC quality and injured fraction over 
  (c) OLS (HC3) of each standardized score on group (reference HKD) with ATAC quality and injured fraction,
      with and without the RNA-side total readout, in the recruitment-site disease groups;
  (d) motif scores against the RNA-side M3 and M1 contributions: Spearman and partial Spearman adjusting for ATAC
-     quality, injured fraction and the RNA-side total readout.
+     quality, injured fraction and the RNA-side total readout; Benjamini-Hochberg q over motifs x components within
+     each participant set.
 Outputs: csbj_dl/results/chrom_expert/{participant_table.tsv, agreement.tsv, group_tests.tsv, group_models.tsv,
          motif_vs_expert.tsv} + PROVENANCE_stats.json
 """
@@ -20,6 +21,7 @@ import numpy as np
 import pandas as pd
 import statsmodels.formula.api as smf
 from scipy import stats
+from statsmodels.stats.multitest import multipletests
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from chrom_common import cfg, result_dir, write_provenance, participant_table, tests  # noqa: E402
@@ -85,7 +87,11 @@ def main():
                 pr = partial_spearman(d, mo, f"rna_{m}", QC + ["injured_frac_allPT", "rna_readout"])
                 mv.append({"motif": mo, "component": m, "participants": sub, "spearman": r.statistic, "p": r.pvalue,
                            "partial_spearman": pr[0], "partial_p": pr[1], "n": pr[2]})
-    MV = pd.DataFrame(mv); MV.to_csv(out / "motif_vs_expert.tsv", sep="\t", index=False)
+    MV = pd.DataFrame(mv)
+    for col in ("p", "partial_p"):          # Benjamini-Hochberg over motifs x components within each participant set
+        MV[col.replace("p", "q", 1) if col == "p" else "partial_q"] = MV.groupby("participants")[col].transform(
+            lambda v: multipletests(v, method="fdr_bh")[1])
+    MV.to_csv(out / "motif_vs_expert.tsv", sep="\t", index=False)
     pd.set_option("display.width", 250); pd.set_option("display.max_rows", 400)
     print(T.groupby("group").size()); print(pd.DataFrame(ag).round(3).to_string())
     print(G[G.feature.isin(scores)][["comparison", "feature", "n1", "n2", "g", "p_wilcoxon"]].round(3).to_string())

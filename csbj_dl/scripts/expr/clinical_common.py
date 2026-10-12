@@ -10,7 +10,7 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "common"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from cdl import CDL, result_dir  # noqa: E402
-from clinical import band_order  # noqa: E402
+from clinical_routing import band_order  # noqa: E402
 
 BANDS = {"albuminuria_band": "alb_ord", "proteinuria_band": "prot_ord", "egfr_band": "egfr_ord"}
 
@@ -57,4 +57,14 @@ def readout_table() -> pd.DataFrame:
     C = pd.read_csv(result_dir("expr_heldout_experts") / "contributions.tsv", sep="\t", dtype={"participant": str})
     out = out.join(C.set_index("participant")[["M1", "M3"]])
     V = pd.read_csv(result_dir("expr_supervision") / "heldout_readouts.tsv", sep="\t", dtype={"participant": str})
-    return out.join(V.set_index("participant"))
+    out = out.join(V.set_index("participant"))
+    # expert identities defined from training participants only (trainonly_experts.py) and the readout standardized
+    # with training-participant statistics of each part (nested_calibration.py)
+    Tt = pd.read_csv(result_dir("expr_trainonly_experts") / "contributions.tsv", sep="\t", dtype={"participant": str})
+    out = out.join(Tt.set_index("participant")[["M1", "M3"]].rename(columns=lambda c: c + "_train_only"))
+    sc = pd.read_csv(result_dir("expr_nested_cv") / "train_scale.tsv", sep="\t")
+    sc = sc[sc.pipeline == "reported"].set_index("fold")
+    fold = pd.read_csv(CDL / "config/splits.tsv", sep="\t", dtype={"participant": str}).set_index("participant").fold
+    f = fold.reindex(out.index)
+    out["moe_train_z"] = (out.moe - f.map(sc.train_mean)) / f.map(sc.train_sd)
+    return out

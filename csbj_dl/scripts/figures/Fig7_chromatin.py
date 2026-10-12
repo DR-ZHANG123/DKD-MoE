@@ -210,20 +210,24 @@ def panel_g(ax):
     for key, lab in MOTIF_SHOW:
         for comp in ("M3", "M1"):
             r = M[(M.motif == key) & (M.component == comp)].iloc[0]
-            rows.append(dict(motif=lab, component=comp, partial_spearman=r.partial_spearman, p=r.partial_p, n=int(r.n)))
+            rows.append(dict(motif=lab, component=comp, partial_spearman=r.partial_spearman, spearman=r.spearman,
+                             p=r.partial_p, q=r.partial_q, n=int(r.n)))
     d = S.src_out(pd.DataFrame(rows), "Fig7_g_motif_vs_expert")
     y = np.arange(len(MOTIF_SHOW))[::-1]; h = 0.38
     for k, (comp, col, lab) in enumerate((("M3", "#C44E52", "DKD-weighted expert"), ("M1", "#4C72B0", "HKD-weighted expert"))):
         q = d[d.component == comp]
-        ax.barh(y + (h / 2 if k == 0 else -h / 2), q.partial_spearman, height=h, color=col, label=lab)
-        for yi, v, p in zip(y, q.partial_spearman, q.p):
-            if p < 0.05:
-                ax.text(v + (0.02 if v > 0 else -0.02), yi + (h / 2 if k == 0 else -h / 2), "*", ha="left" if v > 0 else "right",
-                        va="center", fontsize=6)
+        ax.barh(y + (h / 2 if k == 0 else -h / 2), q.partial_spearman, height=h, color=col, label=f"{lab}, adjusted")
+        yy = y + (h / 2 if k == 0 else -h / 2)
+        ax.scatter(q.spearman, yy, s=7, facecolor="white", edgecolor=S.INK, lw=0.5, zorder=4,
+                   label="unadjusted" if k == 0 else None)
+        for yi, v, raw, p in zip(y, q.partial_spearman, q.spearman, q.q):
+            if p < 0.05:                     # Benjamini-Hochberg q of the partial correlation
+                x = max(v, raw) + 0.05 if v > 0 else min(v, raw) - 0.05
+                ax.text(x, yi + (h / 2 if k == 0 else -h / 2), "*", ha="left" if v > 0 else "right", va="center", fontsize=6)
     ax.axvline(0, color=S.INK, lw=0.5)
     ax.set_yticks(y); ax.set_yticklabels([l for _, l in MOTIF_SHOW], fontsize=5.8); ax.tick_params(axis="y", length=0)
-    ax.set_xlim(-0.6, 0.75)
-    ax.set_xlabel(f"Partial Spearman with expert\ncontribution (n = {d.n.iloc[0]} participants)", fontsize=6)
+    ax.set_xlim(-0.6, 0.85)
+    ax.set_xlabel(f"Spearman with expert contribution\n(n = {d.n.iloc[0]} participants)", fontsize=6)
     ax.legend(loc="lower center", bbox_to_anchor=(0.45, 1.0), ncol=1, fontsize=5.5, frameon=False, handlelength=1.0)
 
 
