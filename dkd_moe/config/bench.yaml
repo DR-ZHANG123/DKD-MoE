@@ -1,0 +1,114 @@
+# bench module: comparison methods for the mixture-of-experts PT-cell model (dkd_moe)
+# every tunable parameter of dkd_moe/scripts/bench/*; scripts never hardcode.
+# Evaluation unit = participant/donor. Scores are derived only from KPMP training folds;
+# external cohorts (GSE211785, GSE195460) are scored forward only.
+seed: 20261010
+seeds: [1, 2, 3, 4, 5]          # model seeds (same as expr final seeds)
+device: cuda:2                  # overridden at run time by --device (GPU with most free memory)
+
+paths:
+  splits: dkd_moe/config/splits.tsv
+  expr_prep: dkd_moe/results/expr_prep
+  expr_scripts: dkd_moe/scripts/expr
+  ckpt: /path/to/dkd_moe_data/dkd_moe_ckpt/bench
+  dev_subsample: /path/to/dkd_moe_data/dkd_moe_ckpt/bench/dev_subsample.h5ad
+  # used only to build a small development subsample for code checks
+  kpmp_sc: data/processed/KPMP_sc_qc_counts.h5ad
+  kpmp_sn: data/processed/KPMP_sn_qc_counts.h5ad
+  kpmp_labels_sc: results/07b_validate_kpmp/cell_labels_sc.tsv.gz
+  kpmp_labels_sn: results/07b_validate_kpmp/cell_labels_sn.tsv.gz
+
+contrast:
+  case: DKD
+  control: HKD
+  # KPMP group -> analysis group (same mapping as the expr condition head)
+  map: {Reference: Reference, DM_noCKD: Reference, HKD: HKD, HKD_withDM: HKD, DKD: DKD}
+  exclude_donors: [HK2874]      # GSE211785 donor with discordant diagnosis between sources
+
+dev:
+  pt_labels: [PT_S1, PT_S2, PT_S3, iPT]
+  n_participants_per_group: 12  # DKD, HKD, Reference per technology
+  cells_per_participant: 250
+  n_hvg: 1500
+  seed: 7
+
+train_cells:
+  cap_per_participant: 1500     # training cells per participant (stratified subsample, fixed by seed)
+  score_cap_per_participant: 3000  # cells used to summarise a participant at scoring time
+
+pseudobulk:
+  min_cells: 20                 # participant x technology pseudobulk needs at least this many PT cells
+  design: "~tech + group"
+  n_top: 50                     # top up- and top down-regulated genes (Wald statistic), DKD vs HKD
+  padj_max: 0.10                # genes must also pass this FDR; if fewer pass, take top by statistic
+  n_cpus: 16
+
+scvi:
+  version: "1.1.6"
+  n_latent: 16
+  n_layers: 2
+  n_hidden: 128
+  gene_likelihood: nb
+  batch_key: tech               # held-out / external libraries are never seen, technology is shared
+  max_epochs: 40
+  batch_size: 1024
+  lr: 1.0e-3
+  de_n_top: 50                  # top up / down genes from scVI change-mode DE (DKD vs HKD, training cells)
+  de_cells_per_group: 20000
+  de_min_nonzero: 0.05          # gene must be detected in >= 5% of cells of either group
+  lr_C: 1.0                     # participant-level logistic regression (standardised mean latent)
+
+scdisinfact:                    # author defaults as in config/run.yaml `scdisinfact` unless stated
+  Ks: [8, 2]
+  batch_size: 64
+  interval: 10
+  lr: 5.0e-4
+  passes: 20                    # expected passes over the training cells (sets the number of epochs)
+  reg_mmd_comm: 1.0e-4
+  reg_mmd_diff: 1.0e-4
+  reg_gl: 1
+  reg_class: 1
+  reg_kl_comm: 1.0e-5
+  reg_kl_diff: 1.0e-2
+  conditions: [DKD, HKD, Reference]
+  batch_key: library            # condition encoder has no batch input, so unseen libraries can be encoded
+  min_cells_library: 30
+  cpu_threads: 16               # scDisInFact runs on CPU (rerun.cpu_methods): its per-batch MMD loop gains
+                                # little from a shared GPU and needs ~10 GB of GPU memory per job
+  ckg_n_top: 100                # top condition-associated genes; sign from training pseudobulk log fold change
+  lr_C: 1.0
+
+cvae:                           # CPA-like conditional VAE written in torch (own implementation)
+  n_latent: 16
+  n_hidden: 256
+  n_layers: 2
+  dropout: 0.1
+  cond_emb_dim: 16
+  adv_weight: 1.0               # adversarial condition classifier on the basal latent
+  adv_hidden: 128
+  epochs: 40
+  batch_size: 1024
+  lr: 1.0e-3
+  weight_decay: 1.0e-6
+  kl_warmup_epochs: 5
+  lr_C: 1.0
+
+moe_ablations:                  # expr model imported read-only; variants differ only in the named switch
+  variants: [full, K1, no_adv, no_cond, dense]
+  epochs: null                  # null -> expr.yaml train.epochs
+  dev_K: 4                      # used only for the development subsample
+
+metrics:
+  n_boot: 2000                  # donor-level bootstrap for AUC confidence intervals
+  ci: 0.95
+  lisi_k: 90
+  lisi_perplexity: 30
+  lisi_cells: 20000             # held-out cells (per fold) used for iLISI
+
+rerun:                          # one-command rerun on the final shared inputs (orchestrate.py)
+  expected_label_source: kpmp_own_annotation_extended
+  slots: [cuda:2, cuda:2, cuda:6, cuda:6]   # one entry per concurrent GPU job; overridable with --slots
+  poll_seconds: 120
+  cpu_methods: [scdisinfact]     # run on CPU, one concurrent job per seed, outside the GPU slots
+  retries: 3                    # a failed job is re-queued at the end of its slot
+  est_hours: {scdisinfact: 5.0, moe: 1.5, scvi: 1.0, cvae: 0.7}

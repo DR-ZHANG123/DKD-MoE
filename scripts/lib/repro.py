@@ -1,4 +1,4 @@
-"""Reproducibility helpers shared by every analysis stage of project016."""
+"""Reproducibility helpers shared by every analysis stage of DKD-MoE."""
 from __future__ import annotations
 import hashlib, json, os, platform, random, subprocess, sys, time
 from pathlib import Path

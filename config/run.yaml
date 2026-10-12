@@ -1,4 +1,4 @@
-# project016 — every tunable parameter. Stages read this file; nothing is hardcoded.
+# DKD-MoE — every tunable parameter. Stages read this file; nothing is hardcoded.
 seed: 20260929
 paths:
   raw: data/raw

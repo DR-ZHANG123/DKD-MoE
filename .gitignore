@@ -1,5 +1,8 @@
 /data/
-/logs/
+/dkd_moe/results/
+/dkd_moe/figures/
+/dkd_moe/logs/*
+!/dkd_moe/logs/.gitkeep
 __pycache__/
 *.pyc
 *.h5ad
