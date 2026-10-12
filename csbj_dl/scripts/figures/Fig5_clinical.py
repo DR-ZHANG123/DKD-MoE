@@ -46,7 +46,7 @@ def panel_a(ax):
     ax.spines["left"].set_visible(False)
     for yy, lab in sect:
         n = d[d.band == [k for k, v in BAND.items() if v == lab][0]].n.iloc[0]
-        ax.text(0.62, yy - 0.25, f"{lab} (n = {n})", fontsize=6.5, fontweight="bold", va="center", ha="left")
+        ax.text(1.06, yy - 0.25, f"{lab} (n = {n})", fontsize=6.5, fontweight="bold", va="center", ha="left")
     ax.set_ylim(y + 0.5, 0.3); ax.set_xlabel("Odds ratio per SD (95% CI)")
     h = [Line2D([], [], marker="o", ls="", color=S.INK, ms=4, label="diagnosis, injured fraction, eGFR"),
          Line2D([], [], marker="o", ls="", mfc="white", mec=S.INK, ms=4, label="+ age, sex, technology, site")]
@@ -91,11 +91,7 @@ def main():
                           bottom=0.12)
     axa = fig.add_subplot(gs[:, 0]); axb = fig.add_subplot(gs[0, 1]); axc = fig.add_subplot(gs[1, 1])
     panel_a(axa); panel_b(axb); panel_c(axc)
-    L = S.letters(fig, [[(axa, "a"), (axb, "b")]], col_align=False)
-    xb = L[1].get_position()[0]
-    fig.canvas.draw(); r = fig.canvas.get_renderer()
-    yc = fig.transFigure.inverted().transform_bbox(axc.get_tightbbox(r, for_layout_only=True)).y1 + 0.006
-    S.letter_at(fig, xb, yc, "c")
+    S.auto_letters(fig, [(axa, "a"), (axb, "b"), (axc, "c")], row_tol=0.15)
     S.save(fig, "Fig5_clinical")
 
 

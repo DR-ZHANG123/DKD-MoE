@@ -38,7 +38,7 @@ def main():
     fig.canvas.draw()
     pos, pos2 = axc.get_position(), axc2.get_position()
     axc2.set_position([pos2.x0, pos2.y0, pos.width, pos2.height])
-    S.letters(fig, [[(axa, "a"), (axb, "b")], [([axc, axc2], "c"), (axd1, "d")], [(axe, "e"), (axf1, "f")]], col_align=False)
+    S.auto_letters(fig, [(axa, "a"), (axb, "b"), ([axc, axc2], "c"), ([axd1, axd2], "d"), (axe, "e"), ([axf1, axf2], "f")])
     S.save(fig, "Fig2_model")
 
 

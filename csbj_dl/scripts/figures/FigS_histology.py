@@ -63,7 +63,7 @@ def panel_a(ax):
         ax.text(k * 2.5 + 0.5, 0.86, S.fmt_p(p).replace("P = ", "P =\n"), ha="center", va="top", fontsize=5.3)
     from matplotlib.patches import Patch
     ax.legend(handles=[Patch(fc="#8172B3", label="Aligned"), Patch(fc="#BFBFBF", label="Shuffled pairs")],
-              loc="center left", bbox_to_anchor=(0.0, 0.66), fontsize=5.6, handlelength=1.0, frameon=False)
+              loc="lower left", bbox_to_anchor=(0.0, 1.0), ncol=2, fontsize=5.6, handlelength=1.0, frameon=False)
 
 
 def panel_b(ax):
@@ -122,13 +122,11 @@ def main():
     b = hi[0][0].get_position(); b2 = hi[1][0].get_position()
     fig.text(b.x0 - 0.006, (b.y0 + b.y1) / 2, "H&E", rotation=90, ha="right", va="center", fontsize=5.8)
     fig.text(b2.x0 - 0.006, (b2.y0 + b2.y1) / 2, "Attribution", rotation=90, ha="right", va="center", fontsize=5.8)
-    L = S.letters(fig, [[(axa, "a"), (axb, "b"), (axc, "c")]], col_align=False)
-    L[0].set_x(0.003)
     fig.canvas.draw(); r = fig.canvas.get_renderer(); inv = fig.transFigure.inverted()
-    yd = max(inv.transform_bbox(a.get_tightbbox(r)).y1 for a in axd) + 0.006
-    S.letter_at(fig, 0.003, yd, "d")
     tt = [t for t in fig.texts if t.get_text().startswith("Highest image-side")][0]
-    S.letter_at(fig, 0.003, inv.transform_bbox(tt.get_window_extent(r)).y1 + 0.004, "e")
+    ytt = inv.transform_bbox(tt.get_window_extent(r)).y1
+    S.auto_letters(fig, [(axa, "a"), (axb, "b"), (axc, "c"), (axd, "d")])
+    S.letter_at(fig, max(0.0, min(inv.transform_bbox(a.get_tightbbox(r)).x0 for a in [axa] + axd) - 0.004), ytt + 0.004, "e")
     S.save(fig, "FigS_histology")
 
 

@@ -150,8 +150,114 @@ def check_boxes_disjoint(fig, patches: list, tol_px: float = 0.5) -> list[str]:
     return issues
 
 
+def auto_letters(fig, items: list[tuple], pad_pt: float = 4.0, col_tol: float = 0.06, row_tol: float = 0.05):
+    """Panel letters on shared rows and columns, computed from the drawn extent of each panel (after the rule of
+    project014 figstyle.align_panel_labels). items: [(ax or [axes], letter)]. Rows: panels whose drawn tops lie
+    within row_tol of the figure height share one baseline, just above the highest drawn top of the row (a panel
+    spanning several rows therefore does not pull the panels below it up). Columns: letters whose drawn left edges
+    lie within col_tol of the figure width share the leftmost edge."""
+    fig.canvas.draw(); r = fig.canvas.get_renderer(); inv = fig.transFigure.inverted(); rec = []
+    for ax, letter in items:
+        axs = ax if isinstance(ax, (list, tuple)) else [ax]
+        tb = [inv.transform_bbox(a.get_tightbbox(r, for_layout_only=True)) for a in axs]
+        rec.append({"letter": letter, "x0": min(b.x0 for b in tb), "top": max(b.y1 for b in tb)})
+    rows = []
+    for it in sorted(rec, key=lambda d: -d["top"]):
+        if rows and rows[-1][0]["top"] - it["top"] < row_tol:
+            rows[-1].append(it)
+        else:
+            rows.append([it])
+    pad = pad_pt / 72 / fig.get_figheight()
+    for row in rows:
+        y = max(o["top"] for o in row) + pad
+        for o in row:
+            o["y"] = y
+    groups = []
+    for o in sorted(rec, key=lambda d: d["x0"]):
+        if groups and o["x0"] - groups[-1][0]["x0"] < col_tol:
+            groups[-1].append(o)
+        else:
+            groups.append([o])
+    for g in groups:
+        x = max(0.0, min(o["x0"] for o in g) - 0.004)
+        for o in g:
+            o["x"] = x
+    return [fig.text(o["x"], o["y"], o["letter"], fontsize=10, fontweight="bold", ha="left", va="bottom") for o in rec]
+
+
+def data_overlap_report(fig, pad_px: float = 1.0) -> list[str]:
+    """Text boxes that cover plotted data in the same axes (scatter points, line vertices and segments, error
+    bars, filled bars and boxes) and legends that cover data. Tick labels, axis labels and texts marked
+    _overlap_exempt (heatmap values, labels drawn on their own tiles) are exempt; schematic axes (axis off) are
+    checked by check_inside / check_boxes_disjoint instead."""
+    from matplotlib.collections import PathCollection, LineCollection
+    from matplotlib.patches import Rectangle, PathPatch
+    fig.canvas.draw(); r = fig.canvas.get_renderer(); issues = []
+
+    def samples(ax):
+        pts = []
+        for c in ax.collections:
+            if not c.get_visible():
+                continue
+            if isinstance(c, PathCollection) and c.get_offsets().size:
+                pts.append(c.get_offset_transform().transform(np.asarray(c.get_offsets())))
+            elif isinstance(c, LineCollection):
+                for seg in c.get_segments():
+                    seg = c.get_transform().transform(np.asarray(seg))
+                    for a, b in zip(seg[:-1], seg[1:]):
+                        pts.append(np.linspace(a, b, 25))
+        for ln in ax.lines:
+            if not ln.get_visible() or ln.get_linewidth() == 0 and ln.get_marker() in (None, "None", ""):
+                continue
+            xy = ln.get_transform().transform(np.asarray(ln.get_xydata(), float))
+            if ln.get_linestyle() in ("None", "", " "):
+                pts.append(xy)
+            else:
+                for a, b in zip(xy[:-1], xy[1:]):
+                    if np.all(np.isfinite(a)) and np.all(np.isfinite(b)):
+                        pts.append(np.linspace(a, b, 40))
+        return np.vstack(pts) if pts else np.zeros((0, 2))
+
+    def solid(ax):
+        out = []
+        for p in ax.patches:
+            if isinstance(p, (Rectangle, PathPatch)) and p.get_visible() and p.get_fill() and p.get_alpha() != 0:
+                b = p.get_window_extent(r)
+                if b.width > 1 and b.height > 1:
+                    out.append(b)
+        return out
+    for ax in fig.axes:
+        if not ax.get_visible() or not ax.axison:
+            continue
+        pts = samples(ax); bars = solid(ax)
+        texts = [t for t in ax.texts if t.get_visible() and t.get_text().strip() and not getattr(t, "_overlap_exempt", False)]
+        for t in texts:
+            b = t.get_window_extent(r)
+            if pts.size:
+                inside = ((pts[:, 0] > b.x0 + pad_px) & (pts[:, 0] < b.x1 - pad_px) &
+                          (pts[:, 1] > b.y0 + pad_px) & (pts[:, 1] < b.y1 - pad_px))
+                if inside.any():
+                    issues.append(f"text '{t.get_text()[:30]}' covers data")
+            for bb in bars:
+                if min(b.x1, bb.x1) - max(b.x0, bb.x0) > pad_px and min(b.y1, bb.y1) - max(b.y0, bb.y0) > pad_px:
+                    issues.append(f"text '{t.get_text()[:30]}' covers a bar/box"); break
+        lg = ax.get_legend()
+        if lg is not None and pts.size:
+            b = lg.get_window_extent(r)
+            inside = ((pts[:, 0] > b.x0) & (pts[:, 0] < b.x1) & (pts[:, 1] > b.y0) & (pts[:, 1] < b.y1))
+            if inside.any():
+                issues.append(f"legend covers data in axes '{ax.get_label()}'")
+    return sorted(set(issues))
+
+
+def exempt(*texts):
+    for t in texts:
+        t._overlap_exempt = True
+    return texts
+
+
 def save(fig, name: str, extra_issues: list[str] | None = None):
-    issues = check_overlaps(fig) + list(extra_issues or [])
+    issues = check_overlaps(fig) + data_overlap_report(fig) + list(extra_issues or [])
     fig.savefig(FIG / f"{name}.pdf")
     fig.savefig(FIG / f"{name}.png", dpi=600)
     from PIL import Image

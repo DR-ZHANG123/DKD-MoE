@@ -138,7 +138,7 @@ def main():
     axa, axb = fig.add_subplot(g1[0, 0]), fig.add_subplot(g1[0, 1])
     axc, axd1, axd2 = fig.add_subplot(g2[0, 0]), fig.add_subplot(g2[0, 1]), fig.add_subplot(g2[0, 2])
     panel_a(axa); panel_b(axb, P, T); panel_c(axc); panel_d([axd1, axd2])
-    S.letters(fig, [[(axa, "a"), (axb, "b")], [(axc, "c"), (axd1, "d")]])
+    S.auto_letters(fig, [(axa, "a"), (axb, "b"), (axc, "c"), ([axd1, axd2], "d")])
     S.save(fig, "Fig3_readout")
 
 

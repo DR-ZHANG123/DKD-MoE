@@ -34,11 +34,7 @@ def main():
               load_track(*LOW, "gse339455", "GSE339455", "matched")]
     morph_dots(axb, mparts, MORPH, "FigS_histology_direction_b_morphology", v=0.35, note_y=-2.3)
     panel_heatmaps(fig, axc, cax, prefix="FigS_histology_direction_c")
-    L = S.letters(fig, [[(axa, "a"), (axb, "b")]], col_align=False)
-    L[0].set_x(0.003)
-    fig.canvas.draw(); r = fig.canvas.get_renderer(); inv = fig.transFigure.inverted()
-    yc = max(inv.transform_bbox(a.get_tightbbox(r)).y1 for a in axc) + 0.008
-    S.letter_at(fig, 0.003, yc, "c")
+    S.auto_letters(fig, [(axa, "a"), (axb, "b"), (axc, "c")])
     S.save(fig, "FigS_histology_direction")
 
 

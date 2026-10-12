@@ -114,7 +114,7 @@ def panel_c(ax, n_show=12):
                 fontweight="bold", color=col)
         for i, r in g.iterrows():
             fc = cmap(0.15 + 0.6 * r.n_folds / nfold)
-            ec = {"complement": "#6A3D9A", "extracellular matrix": "#2E7D32"}.get(r.annotation, "white")
+            ec = {"complement": "#6A3D9A", "extracellular matrix": "#111111"}.get(r.annotation, "white")
             ax.add_patch(Rectangle((i - 0.47, y - 0.42), 0.94, 0.84, fc=fc, ec=ec, lw=1.3 if r.annotation else 0.5))
             lab = r.gene + ("*" if r.min_pt_ratio < 0.5 else "")
             ax.text(i, y, lab, ha="center", va="center", fontsize=5.2, fontstyle="italic",
@@ -123,7 +123,7 @@ def panel_c(ax, n_show=12):
     ly = 3.15
     ax.add_patch(Rectangle((-0.45, ly - 0.22), 0.6, 0.45, fc="white", ec="#6A3D9A", lw=1.3))
     ax.text(0.3, ly, "complement", va="center", fontsize=5.8)
-    ax.add_patch(Rectangle((2.3, ly - 0.22), 0.6, 0.45, fc="white", ec="#2E7D32", lw=1.3))
+    ax.add_patch(Rectangle((2.3, ly - 0.22), 0.6, 0.45, fc="white", ec="#111111", lw=1.3))
     ax.text(3.05, ly, "extracellular matrix", va="center", fontsize=5.8)
     ax.text(5.6, ly, "* expressed mainly outside the proximal tubule", va="center", fontsize=5.8)
     ax.text(ncol - 0.5, ly, f"Shading: training parts (of {nfold})\nselecting the gene", va="center", ha="right",
@@ -218,7 +218,7 @@ def main():
     axd1, axd2 = fig.add_subplot(g3[0, 0]), fig.add_subplot(g3[0, 1])
     axe = fig.add_subplot(g4[0, 0])
     panel_a(axa); panel_b(axb); panel_c(axc); panel_d(axd1, axd2); panel_e(axe)
-    S.letters(fig, [[(axa, "a"), (axb, "b")], [(axc, "c")], [(axd1, "d")], [(axe, "e")]])
+    S.auto_letters(fig, [(axa, "a"), (axb, "b"), (axc, "c"), ([axd1, axd2], "d"), (axe, "e")])
     S.save(fig, "Fig4_interpretation")
 
 

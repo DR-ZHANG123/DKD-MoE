@@ -21,11 +21,7 @@ def main():
     axc = fig.add_axes([0.68, 0.37, 0.3, 0.2])
     axd = fig.add_axes([0.74, 0.045, 0.24, 0.2])
     PH.panel_b(axa1, axa2); PH.panel_d(axb1, axb2); PH.panel_f(axc); PH.panel_g(axd)
-    S.letters(fig, [[(axa1, "a")], [(axb1, "b"), (axc, "c")]], col_align=False)
-    fig.canvas.draw(); r = fig.canvas.get_renderer()
-    bb = fig.transFigure.inverted().transform_bbox(axd.get_tightbbox(r, for_layout_only=True))
-    bc = fig.transFigure.inverted().transform_bbox(axc.get_tightbbox(r, for_layout_only=True))
-    S.letter_at(fig, bc.x0 - 0.012, bb.y1 + 0.006, "d")
+    S.auto_letters(fig, [([axa1, axa2], "a"), ([axb1, axb2], "b"), (axc, "c"), (axd, "d")], col_tol=0.1)
     S.save(fig, "Fig6_chromatin")
 
 

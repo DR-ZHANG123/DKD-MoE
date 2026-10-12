@@ -27,11 +27,12 @@ def main():
     P = P[P.group.isin(GROUPS)].dropna(subset=["moe", "M1", "M3"])
     S.src_out(P[["participant", "group", "moe", "M1", "M3", "injured_fraction"]], "FigS_composition_ab")
     fig = plt.figure(figsize=(S.MAX_W - 0.8, 3.0))
-    g = fig.add_gridspec(1, 2, wspace=0.38, left=0.09, right=0.98, top=0.8, bottom=0.17)
+    g = fig.add_gridspec(1, 2, wspace=0.38, left=0.09, right=0.98, top=0.92, bottom=0.24)
     axa, axb = fig.add_subplot(g[0, 0]), fig.add_subplot(g[0, 1])
     panel(axa, P, "M3", "DKD-weighted expert\ncontribution (log-odds)"); panel(axb, P, "M1", "HKD-weighted expert\ncontribution (log-odds)")
-    axa.legend(loc="lower center", bbox_to_anchor=(1.1, 1.02), ncol=4, fontsize=5.8, frameon=False, handletextpad=0.2)
-    S.letters(fig, [[(axa, "a"), (axb, "b")]])
+    h, l = axa.get_legend_handles_labels()
+    fig.legend(h, l, loc="lower center", bbox_to_anchor=(0.53, 0.01), ncol=4, fontsize=5.8, frameon=False, handletextpad=0.2)
+    S.auto_letters(fig, [(axa, "a"), (axb, "b")])
     S.save(fig, "FigS_composition")
 
 

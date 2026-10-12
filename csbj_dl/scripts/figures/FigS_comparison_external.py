@@ -23,7 +23,7 @@ def main():
     sub = g2[0, 1].subgridspec(3, 1, hspace=0.12)
     axc = [fig.add_subplot(sub[k]) for k in range(3)]
     PC.panel_c(axb); PS.panel_d(axc)
-    S.letters(fig, [[(ax1, "a")], [(axb, "b"), (axc, "c")]], col_align=False)
+    S.auto_letters(fig, [([ax1, ax2], "a"), (axb, "b"), (axc, "c")])
     S.save(fig, "FigS_comparison_external")
 
 
