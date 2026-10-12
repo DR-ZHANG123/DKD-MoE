@@ -276,7 +276,9 @@ def save(fig, name: str, extra_issues: list[str] | None = None):
 def fmt_sci(v: float, lab: str = "q") -> str:
     """Value as a power of ten (journal style, 3 × 10$^{-5}$) below 0.001, else two significant digits."""
     if v < 1e-3:
-        e = int(np.floor(np.log10(v))); m = v / 10 ** e
+        e = int(np.floor(np.log10(v))); m = round(v / 10 ** e)
+        if m >= 10:                       # 9.6e-29 rounds to 10: carry into the exponent
+            m, e = 1, e + 1
         return f"{lab} = {m:.0f}×10$^{{{e}}}$"
     return f"{lab} = {v:.1g}" if v < 0.01 else f"{lab} = {v:.2f}"
 
@@ -285,7 +287,9 @@ def fmt_p(p: float) -> str:
     if p is None or not np.isfinite(p):
         return "P n/a"
     if p < 1e-3:
-        e = int(np.floor(np.log10(p))); m = p / 10 ** e
+        e = int(np.floor(np.log10(p))); m = round(p / 10 ** e, 1)
+        if m >= 10:
+            m, e = 1.0, e + 1
         return f"P = {m:.1f}×10$^{{{e}}}$"
     return f"P = {p:.2g}" if p < 0.1 else f"P = {p:.2f}"
 

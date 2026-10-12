@@ -49,7 +49,7 @@ log files to `dkd_moe/logs/`. Each step reads the tables written by the steps ab
 | 2 Model | `bash dkd_moe/scripts/expr/run_expr.sh` | partitions, cell labels, model selection, final models, readouts, gene attribution, signature, external cohorts |
 | 3 Comparison | `bash dkd_moe/scripts/bench/run_all_bench.sh`, then `harmonise_all.sh` (same folder) | comparison methods and model variants on the same participants |
 | 4 Nested selection | `bash dkd_moe/scripts/expr/run_nested_cv.sh "<devices>"` | model selection repeated inside every training partition |
-| 5 Follow-up | `bash dkd_moe/scripts/expr/run_followup.sh [device]` | model without experts and its components, forms of supervision, held-out expert contributions, identities and exchanges, diabetes groups, clinical models, robustness of the readout, signatures by cellular source |
+| 5 Follow-up | `bash dkd_moe/scripts/expr/run_followup.sh [device]` | model without experts and its components, forms of supervision, held-out expert contributions, identities and exchanges, cell-level map of routing, diabetes groups, clinical models, robustness of the readout, signatures by cellular source |
 | 6 Chromatin | `bash dkd_moe/scripts/chrom/run_chrom.sh` | chromatin–RNA alignment, motifs, expert components in chromatin and motif accessibility (needs step 5) |
 | 7 Histology | `bash dkd_moe/scripts/align/run_track_full.sh` | H&E–expression contrastive alignment |
 | 8 Figures | `bash dkd_moe/scripts/figures/run_all.sh` | all figures from the result tables |

@@ -7,7 +7,7 @@ source "$(conda info --base)/etc/profile.d/conda.sh"
 conda activate dkd-moe
 cd "$(dirname "$0")"
 ALL=(Fig1_framework Fig2_model Fig3_readout Fig4_interpretation Fig5_clinical Fig6_chromatin
-     FigS_composition FigS_comparison_external FigS_chromatin_alignment FigS_histology FigS_histology_direction GraphicalAbstract)
+     FigS_signature FigS_composition FigS_comparison_external FigS_chromatin_alignment FigS_histology FigS_histology_direction GraphicalAbstract)
 SEL=("$@")
 for f in "${ALL[@]}"; do
   if [ ${#SEL[@]} -gt 0 ]; then

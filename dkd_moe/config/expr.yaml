@@ -291,3 +291,13 @@ severity_matching:
   covariates: [injured_fraction, egfr_ord, age_ord]
   ratio: 2                      # DKD participants per participant with diabetes without CKD, without replacement
   readouts: [moe, no_experts, M1, M3, M3_train_only]
+# Cell-level map of the latent space (cell_atlas.py): layout from the latent means of final model seed 1 on a
+# participant-balanced sample of cells; colours from the partition models that had not seen the participant
+cell_atlas:
+  cells_per_participant: 250
+  layout_seed: 1
+  n_neighbors: 30
+  min_dist: 0.3
+  grid_bins: 80               # bins per axis for participant-balanced cell densities
+  min_cells_density: 20       # participants with fewer sampled cells in a set are left out of its density
+  random_state: 0

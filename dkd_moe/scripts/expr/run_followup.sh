@@ -27,6 +27,7 @@ python $S/expr/sup_compare.py                              > $L/sup_compare.log 
 # expert contributions and exchanges of expert weight in held-out participants
 DKDMOE_DEVICE=$DEV python $S/expr/heldout_experts.py         > $L/heldout_experts.log 2>&1
 python $S/expr/heldout_exchange_ranks.py                   > $L/heldout_exchange_ranks.log 2>&1
+python $S/expr/cell_atlas.py                               > $L/cell_atlas.log 2>&1
 # three summaries of the nested cross-validation; expert identities from training participants; gene-level exchange
 # effects; components of the model without experts chosen like the experts
 DKDMOE_DEVICE=$DEV python $S/expr/nested_calibration.py      > $L/nested_calibration.log 2>&1

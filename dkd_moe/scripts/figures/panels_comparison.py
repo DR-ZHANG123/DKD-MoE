@@ -21,7 +21,7 @@ from matplotlib.lines import Line2D
 import _style as S
 
 FINAL = "MoE final model readout"
-ROWS = [(FINAL, "Mixture of experts: readout", "moe"),
+ROWS = [(FINAL, "DKD-MoE: readout", "moe"),
         ("pseudobulk/DE_set", "Participant-level DE: gene set", "pseudobulk"),
         ("scvi/DE_set", "scVI: DE gene set", "scvi"),
         ("scvi/latent_LR", "scVI: latent classifier", "scvi"),
@@ -35,7 +35,7 @@ FAM_COL = {"sup": "#8172B3", "moe": "#C44E52", "pseudobulk": "#8C8C8C", "scvi": 
 MIX = [("pseudobulk/PCA_uncorrected", "PCA, uncorrected", "pseudobulk"), ("scvi/scVI_latent", "scVI latent", "scvi"),
        ("scdisinfact/scDisInFact_common_latent", "scDisInFact shared latent", "scdisinfact"),
        ("cvae/CVAE_basal_latent", "Conditional VAE basal latent", "cvae"),
-       ("Mixture of experts latent", "Mixture of experts latent", "moe"),
+       ("Mixture of experts latent", "DKD-MoE latent", "moe"),
        ("Supervised single expert (condition head on latent mean)", "Supervised single expert latent", "sup")]
 # readout of each variant: condition classifier log-odds; the single-expert variant has no routing, so its
 # participant latent state is read by logistic regression

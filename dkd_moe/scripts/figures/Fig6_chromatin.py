@@ -13,13 +13,13 @@ S.SRC_RENAME.update({"chr_b": "Fig6_a", "chr_d": "Fig6_b", "chr_f": "Fig6_c", "c
 
 def main():
     S.setup()
-    fig = plt.figure(figsize=(S.MAX_W - 0.3, 7.6))
-    g1 = fig.add_gridspec(1, 2, width_ratios=[1.15, 0.85], wspace=0.42, left=0.09, right=0.985, top=0.955, bottom=0.71)
+    fig = plt.figure(figsize=(S.MAX_W - 0.15, 6.6))
+    g1 = fig.add_gridspec(1, 2, width_ratios=[1.15, 0.85], wspace=0.42, left=0.09, right=0.985, top=0.955, bottom=0.715)
     axa1, axa2 = fig.add_subplot(g1[0, 0]), fig.add_subplot(g1[0, 1])
-    g2 = fig.add_gridspec(1, 2, wspace=0.75, left=0.1, right=0.55, top=0.56, bottom=0.05)
+    g2 = fig.add_gridspec(1, 2, wspace=0.75, left=0.1, right=0.55, top=0.6, bottom=0.065)
     axb1, axb2 = fig.add_subplot(g2[0, 0]), fig.add_subplot(g2[0, 1])
-    axc = fig.add_axes([0.68, 0.37, 0.3, 0.2])
-    axd = fig.add_axes([0.74, 0.045, 0.24, 0.2])
+    axc = fig.add_axes([0.68, 0.41, 0.3, 0.215])
+    axd = fig.add_axes([0.74, 0.065, 0.24, 0.2])
     PH.panel_b(axa1, axa2); PH.panel_d(axb1, axb2); PH.panel_f(axc); PH.panel_g(axd)
     S.auto_letters(fig, [([axa1, axa2], "a"), ([axb1, axb2], "b"), (axc, "c"), (axd, "d")], col_tol=0.1)
     S.save(fig, "Fig6_chromatin")
