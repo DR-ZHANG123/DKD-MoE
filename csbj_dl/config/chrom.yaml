@@ -117,3 +117,16 @@ motif:
   gc_bins: 20
   pseudocount: 0.8
   report: [RELA, REL, NFKB1, NFKB2, STAT3, FOS, JUN, FOS::JUN, JUNB, FOSL2, ATF3, NR3C1, HNF4A, HNF1A, HNF1B]
+
+# Expert components in chromatin (scripts/chrom/11_expert_chromatin.py) and motif accessibility per participant
+# (scripts/chrom/12_motif_activity.py, 13_expert_chrom_stats.py)
+expert:
+  matching: csbj_dl/results/expr_heldout_experts/matching.tsv    # partition-model expert -> reproducible expert
+  components: [M1, M3]          # HKD-weighted and DKD-weighted experts
+  groups: [DKD, HKD, HKD_withDM, DM_noCKD]                        # recruitment-site disease groups
+  comparisons: [[DKD, HKD], [DKD, DM_noCKD], [DM_noCKD, HKD], [HKD_withDM, HKD], [DKD, HKD_withDM]]
+motif_activity:
+  motifs: [RELA, REL, NFKB1, NFKB2, NR3C1, TEAD1, HNF4A, HNF1B, FOS::JUN]
+  n_background: 50              # GC- and accessibility-matched background peak sets per motif
+  gc_bins: 10
+  access_bins: 10

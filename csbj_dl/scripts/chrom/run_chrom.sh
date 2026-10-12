@@ -17,4 +17,9 @@ run 05 python 05_chrom_readout.py
 run 06 python 06_attrib.py
 run 07 python 07_motifs.py
 run 08 python 08_figdata.py
+run 10 python 10_qc_adjust.py
+# expert components in chromatin (needs results/expr_heldout_experts/matching.tsv from run_followup.sh)
+run 11 python 11_expert_chromatin.py
+run 12 python 12_motif_activity.py
+run 13 python 13_expert_chrom_stats.py
 echo "chrom pipeline finished $(date)"

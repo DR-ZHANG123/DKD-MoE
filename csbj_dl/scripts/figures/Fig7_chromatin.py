@@ -4,7 +4,9 @@ Sources (results/chrom_*): chrom_readout/retrieval_by_model.tsv (RNA-to-ATAC ret
 held-out KPMP participants, aligned vs shuffled pairs; one point per model), participant_scores.tsv, kpmp_tests.tsv,
 kpmp_agreement.tsv (participant-level chromatin-side readout vs RNA readout), external_tests.tsv (donor level),
 chrom_motifs/motif_report.tsv (motif enrichment in the top-attributed peaks of each direction vs GC-matched
-background), chrom_attrib/top_genes.tsv (nearest genes of the top-attributed peaks).
+background), chrom_expert/{participant_table,group_tests}.tsv (chromatin-side score of the DKD-weighted expert
+contribution by group), chrom_expert/motif_vs_expert.tsv (participant motif accessibility against the RNA-side
+contributions of the DKD- and HKD-weighted experts, partial Spearman).
 Chromatin features: 'peaks' = consensus peak matrix; 'gact' = gene-activity scores (used where an external cohort
 has no peak matrix compatible with the KPMP consensus peaks)."""
 from __future__ import annotations
@@ -177,6 +179,54 @@ def panel_e(ax, n_top=10):
                   fontsize=6)
 
 
+EXP_GROUPS = ["HKD", "HKD_withDM", "DM_noCKD", "DKD"]
+MOTIF_SHOW = [("RELA", "RELA"), ("REL", "REL"), ("NFKB1", "NFKB1"), ("NFKB2", "NFKB2"), ("FOS::JUN (MA0099.4)", "FOS::JUN"),
+              ("NR3C1", "NR3C1"), ("TEAD1", "TEAD1"), ("HNF1B", "HNF1B"), ("HNF4A (MA0114.5)", "HNF4A")]
+
+
+def panel_f(ax):
+    T = S.read("chrom_expert/participant_table.tsv", dtype={"participant": str})
+    G = S.read("chrom_expert/group_tests.tsv"); G = G[G.feature == "chrom_M3"].set_index("comparison")
+    d = T[T.group.isin(EXP_GROUPS)]
+    S.src_out(d[["participant", "group", "chrom_M3", "rna_M3", "n_cells"]], "Fig7_f_expert_chromatin")
+    data = [d[d.group == g].chrom_M3.values for g in EXP_GROUPS]
+    S.strip_box(ax, data, range(4), [S.GROUP_COL[g] for g in EXP_GROUPS], s=4)
+    ax.set_xticks(range(4)); ax.set_xticklabels([f"{l}\n(n = {len(x)})" for l, x in
+                                                 zip(["HKD", "HKD\n+ DM", "DM,\nno CKD", "DKD"], data)], fontsize=5.4)
+    ax.set_ylabel("Chromatin-side DKD-\nweighted expert score")
+    top = max(np.max(x) for x in data); span = top - min(np.min(x) for x in data); rows = []
+    for (i, j, comp), lev in zip([(2, 3, "DKD_vs_DM_noCKD"), (0, 2, "DM_noCKD_vs_HKD"), (0, 3, "DKD_vs_HKD")], [0.06, 0.26, 0.46]):
+        r = G.loc[comp]; rows.append(r)
+        y = top + lev * span
+        ax.plot([i, i, j, j], [y - 0.03 * span, y, y, y - 0.03 * span], color=S.INK, lw=0.6)
+        ax.text((i + j) / 2, y + 0.01 * span, f"g = {r.g:.2f}, {S.fmt_p(r.p_wilcoxon)}", ha="center", va="bottom", fontsize=5.4)
+    S.src_out(pd.DataFrame(rows).reset_index(), "Fig7_f_tests")
+    ax.set_ylim(ax.get_ylim()[0], top + 0.72 * span)
+
+
+def panel_g(ax):
+    M = S.read("chrom_expert/motif_vs_expert.tsv"); M = M[M.participants == "disease"]
+    rows = []
+    for key, lab in MOTIF_SHOW:
+        for comp in ("M3", "M1"):
+            r = M[(M.motif == key) & (M.component == comp)].iloc[0]
+            rows.append(dict(motif=lab, component=comp, partial_spearman=r.partial_spearman, p=r.partial_p, n=int(r.n)))
+    d = S.src_out(pd.DataFrame(rows), "Fig7_g_motif_vs_expert")
+    y = np.arange(len(MOTIF_SHOW))[::-1]; h = 0.38
+    for k, (comp, col, lab) in enumerate((("M3", "#C44E52", "DKD-weighted expert"), ("M1", "#4C72B0", "HKD-weighted expert"))):
+        q = d[d.component == comp]
+        ax.barh(y + (h / 2 if k == 0 else -h / 2), q.partial_spearman, height=h, color=col, label=lab)
+        for yi, v, p in zip(y, q.partial_spearman, q.p):
+            if p < 0.05:
+                ax.text(v + (0.02 if v > 0 else -0.02), yi + (h / 2 if k == 0 else -h / 2), "*", ha="left" if v > 0 else "right",
+                        va="center", fontsize=6)
+    ax.axvline(0, color=S.INK, lw=0.5)
+    ax.set_yticks(y); ax.set_yticklabels([l for _, l in MOTIF_SHOW], fontsize=5.8); ax.tick_params(axis="y", length=0)
+    ax.set_xlim(-0.6, 0.75)
+    ax.set_xlabel(f"Partial Spearman with expert\ncontribution (n = {d.n.iloc[0]} participants)", fontsize=6)
+    ax.legend(loc="lower center", bbox_to_anchor=(0.45, 1.0), ncol=1, fontsize=5.5, frameon=False, handlelength=1.0)
+
+
 def main():
     S.setup()
     fig = plt.figure(figsize=(S.MAX_W - 0.3, 8.3))
@@ -184,11 +234,12 @@ def main():
                           bottom=0.73)
     axa, axb1, axb2 = (fig.add_subplot(g1[0, i]) for i in range(3))
     axc = fig.add_axes([0.27, 0.47, 0.3, 0.15])
-    axe = fig.add_axes([0.76, 0.05, 0.2, 0.57])
+    axf = fig.add_axes([0.76, 0.43, 0.22, 0.19])
+    axg = fig.add_axes([0.80, 0.05, 0.18, 0.26])
     g3 = fig.add_gridspec(1, 2, wspace=0.75, left=0.1, right=0.6, top=0.37, bottom=0.05)
     axd1, axd2 = (fig.add_subplot(g3[0, i]) for i in range(2))
-    panel_a(axa); panel_b(axb1, axb2); panel_c(axc); panel_d(axd1, axd2); panel_e(axe)
-    S.letters(fig, [[(axa, "a"), (axb1, "b")], [(axc, "c"), (axe, "e")], [(axd1, "d")]], col_align=False)
+    panel_a(axa); panel_b(axb1, axb2); panel_c(axc); panel_d(axd1, axd2); panel_f(axf); panel_g(axg)
+    S.letters(fig, [[(axa, "a"), (axb1, "b")], [(axc, "c"), (axf, "e")], [(axd1, "d"), (axg, "f")]], col_align=False)
     S.save(fig, "Fig7_chromatin")
 
 
