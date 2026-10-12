@@ -3,7 +3,7 @@ CosMx / Xenium DKD atlas (Zenodo 19868428).
 
 The DKDiPT marker programme has only 3 genes on the panels (< 5 required minimum), so no
 programme score is computed; genes are reported individually. Measured genes = genes detected in
->= 1 cell of that platform. Donors shared with the discovery atlas, HK2874 (discordant diagnosis),
+>= 1 cell of that platform. Donors shared with GSE211785, HK2874 (discordant diagnosis),
 paediatric donors and mixed-aetiology samples are excluded. Unit = donor (replicate sections
 merged). Per donor x platform x author cell type (iPT, PT): pooled log1p(counts per 10k)."""
 from __future__ import annotations

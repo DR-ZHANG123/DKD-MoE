@@ -1,6 +1,6 @@
 """Shared helpers for the Visium stages (10a GSE211785, 10b KPMP).
 
-- ipt_markers(): iPT-state and healthy-PT marker genes from the discovery atlas, defined once and
+- ipt_markers(): iPT-state and healthy-PT marker genes from the GSE211785 atlas, defined once and
   used only to locate injured-PT-rich spots. Rule:
   SN-stratum, QC-passing libraries with >= min_cells iPT and >= min_cells PT_S1-3 cells; per library
   log2 CPM of the iPT pseudobulk minus that of the pooled PT_S1-3 pseudobulk; HGNC-approved
