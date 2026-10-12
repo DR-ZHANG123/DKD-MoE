@@ -4,8 +4,8 @@ DKD-MoE is a diagnosis-conditioned mixture-of-experts variational autoencoder fo
 transcriptomes of human proximal tubule cells. A routing network assigns each cell to a small set of experts, a
 condition head reads diabetic kidney disease (DKD) against hypertensive kidney disease (HKD) from the expert
 mixture, and each participant's readout decomposes into additive expert contributions. This repository contains
-the model, its training and evaluation, and every analysis and figure of the accompanying article, "DKD-MoE: Disease-Conditioned
-Expert Routing Reveals a Diabetes-Associated Proximal Tubule Injury Component Linked to Albuminuria".
+the model, its training and evaluation, and every analysis and figure of the accompanying article, "DKD-MoE Reveals a Diabetes-Associated
+Proximal Tubule Injury Component Linked to Albuminuria".
 
 ## Layout
 
