@@ -38,6 +38,10 @@ ICONS = {
     "microscope": "A laboratory light microscope, side view, grey and blue.",
     "patients": "Three simple human bust silhouettes side by side, neutral grey-blue, representing study participants.",
     "neural_net": "A small stylised neural network: three columns of round nodes connected by thin lines, blue and purple.",
+    "microarray": "A gene expression microarray glass chip seen at a slight angle, with a regular grid of small red, green "
+                  "and yellow spots.",
+    "xenium": "A square fluorescence microscopy image of kidney tissue on a dark background, with blue nuclei and many "
+              "small coloured transcript dots, rounded corners.",
 }
 
 

@@ -81,17 +81,18 @@ def panel_a(ax, n):
         ax.add_patch(Rectangle((80.0 + i * 5.6, 115.4), 4.8, 3.2, fc=BLUE if i < 4 else "#DD8452", ec="white", lw=0.4,
                                alpha=0.8, zorder=4))
     txt(ax, 108.4, 117.0, "held out", fs=5.3, ha="left", col="#B25F2A")
-    panel_frame(ax, 122, 113, 174, 163, "#FBF0E6", "External cohorts: testing only", "ext")
-    items = [("GSE211785", f"sc/snRNA-seq, {g('GSE211785', 'donors')} donors; Visium, {g('GSE211785', 'visium_participants')}"),
-             ("GSE195460", f"snRNA-seq, {g('GSE195460', 'donors')} donors"),
-             ("GSE104954 (ERCB)", f"tissue arrays, {g('GSE104954', 'samples')} samples"),
-             ("Zenodo 19868428", f"Xenium, {g('Zenodo19868428', 'xenium_donors_scored')} donors"),
-             ("GSE339455", f"Visium + H&E, {g('GSE339455', 'tissue_regions')} regions")]
-    for i, (a, b) in enumerate(items):
-        ya = 153.0 - i * 8.2
-        txt(ax, 136.0, ya + 1.5, a, fs=5.8, fw="bold", ha="left")
-        txt(ax, 136.0, ya - 1.7, b, fs=5.3, ha="left", col="#444444")
-    icon(ax, "slides_stack", 129.0, 137.0, w=10.0)
+    panel_frame(ax, 122, 113, 174, 163, "#FBF0E6", "Independent cohorts: testing only", "ext")
+    items = [("pt_cell", "Single-cell and spatial atlas",
+              f"{g('GSE211785', 'donors')} donors; Visium, {g('GSE211785', 'visium_participants')} donors"),
+             ("chromatin", "Single-nucleus RNA and ATAC", f"{g('GSE195460', 'donors')} donors"),
+             ("microarray", "Tubulointerstitial microarrays", f"{g('GSE104954', 'samples')} biopsies"),
+             ("xenium", "Imaging-based spatial transcriptomics", f"{g('Zenodo19868428', 'xenium_donors_scored')} donors"),
+             ("visium", "Visium with H&E", f"{g('GSE339455', 'tissue_regions')} tissue regions")]
+    for i, (ic, name, acc) in enumerate(items):
+        ya = 152.4 - i * 8.6
+        icon(ax, ic, 128.6, ya, h=6.2 if ic not in ("visium", "microarray") else 4.6)
+        txt(ax, 134.2, ya + 1.6, name, fs=5.6, fw="bold", ha="left")
+        txt(ax, 134.2, ya - 1.7, acc, fs=5.1, ha="left", col="#444444")
     arrow(ax, 117.6, 138.0, 121.4, 138.0, lw=1.2)
 
 
