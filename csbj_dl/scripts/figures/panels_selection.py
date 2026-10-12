@@ -35,7 +35,7 @@ def panel_a(ax, cax_note=None):
         v = out[c].astype(float).values
         z = (v - v.min()) / (np.ptp(v) + 1e-12)
         M[:, j] = z if hi else 1 - z
-    ax.imshow(M, cmap="Greens", vmin=-0.15, vmax=1.35, aspect="auto")
+    ax.imshow(M, cmap="Blues", vmin=-0.15, vmax=1.35, aspect="auto")
     for i in range(n):
         for j, (c, _, _, f) in enumerate(cols):
             ax.text(j, i, f.format(out[c].iloc[i]), ha="center", va="center", fontsize=6,
@@ -60,7 +60,7 @@ def panel_b(ax):
             ("Readout\nICC", r.logodds_icc_2_1), ("DKD vs HKD\nAUC", r.auc_dkd_hkd_seedmean_logodds)]
     d = S.src_out(pd.DataFrame(rows, columns=["metric", "value"]), "sel_b_stability")
     x = np.arange(len(d))
-    ax.bar(x, d.value, 0.55, color="#55A868", ec="white", lw=0.3)
+    ax.bar(x, d.value, 0.55, color="#4A6278", ec="white", lw=0.3)
     for xi, v in zip(x, d.value):
         ax.text(xi, v + 0.02, f"{v:.2f}", ha="center", va="bottom", fontsize=5.8)
     ax.set_xticks(x); ax.set_xticklabels(d.metric, fontsize=6)

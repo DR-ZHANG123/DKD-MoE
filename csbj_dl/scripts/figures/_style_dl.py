@@ -37,7 +37,8 @@ GREY = "#8C8C8C"
 
 def setup():
     plt.rcParams.update({
-        "font.family": "sans-serif", "font.sans-serif": ["Arial", "Helvetica", "Liberation Sans", "DejaVu Sans"],
+        "font.family": "serif", "font.serif": ["Times New Roman", "Liberation Serif", "DejaVu Serif"],
+        "mathtext.fontset": "stix",
         "font.size": 7, "axes.titlesize": 7, "axes.labelsize": 7, "xtick.labelsize": 6.5, "ytick.labelsize": 6.5,
         "legend.fontsize": 6.5, "axes.spines.top": False, "axes.spines.right": False, "axes.linewidth": 0.6,
         "xtick.major.width": 0.6, "ytick.major.width": 0.6, "xtick.major.size": 2.5, "ytick.major.size": 2.5,
@@ -164,6 +165,14 @@ def save(fig, name: str, extra_issues: list[str] | None = None):
         print("   ", i)
     plt.close(fig)
     return issues
+
+
+def fmt_sci(v: float, lab: str = "q") -> str:
+    """Value as a power of ten (journal style, 3 × 10$^{-5}$) below 0.001, else two significant digits."""
+    if v < 1e-3:
+        e = int(np.floor(np.log10(v))); m = v / 10 ** e
+        return f"{lab} = {m:.0f}×10$^{{{e}}}$"
+    return f"{lab} = {v:.1g}" if v < 0.01 else f"{lab} = {v:.2f}"
 
 
 def fmt_p(p: float) -> str:

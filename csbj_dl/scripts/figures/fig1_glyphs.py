@@ -55,10 +55,10 @@ def tissue(ax, cx, cy, w, h, z=4, spots=True):
         for i in range(4):
             for j in range(3):
                 ax.add_patch(Circle((cx - w / 2 + (i + 0.6) * w / 4.2, cy - h / 2 + (j + 0.6) * h / 3.2), 0.55,
-                                    fc="none", ec="#2E7D32", lw=0.35, zorder=z + 2))
+                                    fc="none", ec="#4A6278", lw=0.35, zorder=z + 2))
 
 
-def peaks(ax, x0, y0, w, h, col="#55A868", seed=3, z=4):
+def peaks(ax, x0, y0, w, h, col="#8172B3", seed=3, z=4):
     rng = np.random.default_rng(seed)
     n = 7; bw = w / (n * 1.5)
     for i in range(n):
@@ -85,7 +85,7 @@ def layers(ax, x0, y0, x1, y1, sizes, col, z=4, r=0.75, links=True):
 
 def expr_vector(ax, x0, y0, w, h, n, seed, z=4, cmap=None):
     import matplotlib.pyplot as plt
-    cm = cmap or plt.cm.Greens
+    cm = cmap or plt.cm.Blues
     v = np.random.default_rng(seed).uniform(0.1, 1, n); ch = h / n
     for i, a in enumerate(v):
         ax.add_patch(Rectangle((x0, y0 + i * ch), w, ch * 0.9, fc=cm(0.2 + 0.7 * a), ec="none", zorder=z))

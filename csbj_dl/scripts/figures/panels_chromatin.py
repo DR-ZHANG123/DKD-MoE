@@ -42,7 +42,7 @@ def panel_a(ax):
     k = 0
     for f in [x for x in FEAT if x in set(R.feature)]:
         for metric, ch, ml in [("top1_at100", 0.01, "top 1"), ("top10_at100", 0.10, "top 10")]:
-            for j, (pairs, c) in enumerate([("aligned", "#55A868"), ("shuffled", "#BFBFBF")]):
+            for j, (pairs, c) in enumerate([("aligned", "#4A6278"), ("shuffled", "#BFBFBF")]):
                 pos.append(k * 2.4 + j); cols.append(c)
                 data.append(R[(R.feature == f) & (R.pairs == pairs)][metric].values)
             ticks.append(k * 2.4 + 0.5); labs.append(f"{FEAT[f].replace(' ', chr(10))}\n{ml}"); chance.append((k * 2.4 - 0.45, k * 2.4 + 1.45, ch))
@@ -54,7 +54,7 @@ def panel_a(ax):
     ax.set_ylabel("Same nucleus retrieved among\n100 candidates (fraction)")
     ax.set_ylim(0, 1.08)
     from matplotlib.patches import Patch
-    ax.legend(handles=[Patch(fc="#55A868", label="Aligned"), Patch(fc="#BFBFBF", label="Shuffled pairs"),
+    ax.legend(handles=[Patch(fc="#4A6278", label="Aligned"), Patch(fc="#BFBFBF", label="Shuffled pairs"),
                        plt.Line2D([], [], color=S.GREY, ls="--", lw=0.7, label="Chance")],
               loc="upper right", fontsize=5.5, frameon=False, handlelength=1.2)
     n = len(R[(R.feature == PRIMARY) & (R.pairs == "aligned")])
@@ -128,7 +128,7 @@ def panel_c(ax):
 DKD_SHOW = [("RELA", "NF-κB/REL"), ("REL", "NF-κB/REL"), ("NFKB2", "NF-κB/REL"), ("NFKB1", "NF-κB/REL"),
             ("TEAD3", "TEAD"), ("TEAD1", "TEAD"), ("NFIX", "NFI"), ("NFIB", "NFI"), ("NR3C1", "NR3C1"),
             ("FOSL1::JUNB", "AP-1"), ("JUN", "AP-1"), ("HNF1B", "HNF1"), ("HNF1A", "HNF1"), ("STAT3", "STAT3")]
-FAM_COL.update({"TEAD": "#55A868", "NFI": "#64B5CD", "HNF1": "#4C72B0"})
+FAM_COL.update({"TEAD": "#937860", "NFI": "#64B5CD", "HNF1": "#4C72B0"})
 
 
 def _motif_bars(ax, d, col):
@@ -136,7 +136,7 @@ def _motif_bars(ax, d, col):
     for yi, r in zip(y, d.itertuples()):
         sig = r.q_bh < 0.05
         ax.barh(yi, r.log2_or, 0.66, color=col if sig else "white", ec=col, lw=0.7)
-        ax.text(max(r.log2_or, 0) + 0.04, yi, f"q = {r.q_bh:.1g}" if sig else "ns", va="center", ha="left",
+        ax.text(max(r.log2_or, 0) + 0.04, yi, S.fmt_sci(r.q_bh) if sig else "ns", va="center", ha="left",
                 fontsize=5.0, color="#555555")
     ax.axvline(0, color=S.INK, lw=0.5)
     ax.set_yticks(y); ax.set_yticklabels(d.motif, fontsize=5.6); ax.tick_params(axis="y", length=0)
@@ -155,7 +155,7 @@ def panel_d(ax_dkd, ax_hkd, n_hkd=10):
     S.src_out(d1, "chr_d_motifs_dkd_side"); S.src_out(d2, "chr_d_motifs_hkd_side")
     _motif_bars(ax_dkd, d1, "#C44E52"); _motif_bars(ax_hkd, d2.reset_index(drop=True), "#4C72B0")
     for t, f in zip(ax_dkd.get_yticklabels(), d1.family):
-        t.set_color(FAM_COL.get(f, S.INK))
+        t.set_color(S.INK)                    # black type (journal style); family is given in the legend text
     ax_dkd.set_title("DKD-side attributed peaks", fontsize=6.2, pad=3)
     ax_hkd.set_title("HKD-side attributed peaks (top motifs)", fontsize=6.2, pad=3)
 

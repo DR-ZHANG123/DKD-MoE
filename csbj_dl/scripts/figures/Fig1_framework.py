@@ -16,8 +16,8 @@ import _style_dl as S
 import fig1_glyphs as Gl
 
 W, H, Y0 = 175.0, 204.0, 14.0
-C = {"kpmp": "#E8EEF7", "kpmp_ec": "#4C72B0", "ext": "#FBEDE3", "ext_ec": "#DD8452", "model": "#EEF5EE",
-     "model_ec": "#55A868", "align": "#F3EEF8", "align_ec": "#8172B3", "read": "#F7F3E6", "read_ec": "#B59F3B",
+C = {"kpmp": "#E8EEF7", "kpmp_ec": "#4C72B0", "ext": "#FBEDE3", "ext_ec": "#DD8452", "model": "#EEF2F6",
+     "model_ec": "#4A6278", "align": "#F3EEF8", "align_ec": "#8172B3", "read": "#F7F3E6", "read_ec": "#B59F3B",
      "node": "white", "ink": S.INK, "red": "#C44E52", "blue": "#4C72B0"}
 PAIRS, BOXES = [], []
 
@@ -53,7 +53,7 @@ def arrow(ax, x0, y0, x1, y1, col=None, lw=0.8, ls="-", style="-|>", rad=0.0, ms
 
 
 def header(ax, x0, y1, x1, s, ec):
-    return txt(ax, (x0 + x1) / 2, y1 - 3.2, s, None, fs=7, fw="bold", col=ec)
+    return txt(ax, (x0 + x1) / 2, y1 - 3.2, s, None, fs=7, fw="bold", col=C["ink"])   # black type (journal style)
 
 
 def counts():
@@ -145,7 +145,7 @@ def glyph(ax, k, cx, cy):
     elif k == "multiome":
         ax.add_patch(Circle((cx - 4.5, cy), 3.0, fc="#7B78B8", ec="none", alpha=0.85, zorder=4))
         for i in range(5):
-            ax.add_patch(Rectangle((cx + 0.5 + i * 1.6, cy - 2.6), 1.0, 1.0 + 3.6 * rng.uniform(0.2, 1), fc="#55A868",
+            ax.add_patch(Rectangle((cx + 0.5 + i * 1.6, cy - 2.6), 1.0, 1.0 + 3.6 * rng.uniform(0.2, 1), fc="#8172B3",
                                    ec="none", zorder=4))
         ax.plot([cx + 0.2, cx + 8.6], [cy - 2.7, cy - 2.7], color=C["ink"], lw=0.5, zorder=4)
     else:
@@ -158,7 +158,7 @@ def glyph(ax, k, cx, cy):
                                     ec="none", alpha=0.8, zorder=5))
 
 
-EXPERT_COL = {0: "#4C72B0", 1: "#55A868", 2: "#C44E52"}     # HKD-weighted, healthy-cell, DKD-weighted
+EXPERT_COL = {0: "#4C72B0", 1: "#937860", 2: "#C44E52"}     # HKD-weighted, healthy-cell, DKD-weighted
 
 
 def panel_b(ax, K):
@@ -172,14 +172,14 @@ def panel_b(ax, K):
     txt(ax, 9.0, 104.5, "counts $\\mathbf{x}_n$\n(3,000 genes)", fs=5.4, va="top")
     # encoder
     Gl.layers(ax, 16.0, ym - 10, 30.0, ym + 10, [6, 5, 4], ec)
-    txt(ax, 23.0, ym + 12.6, "Shared encoder", fs=5.8, fw="bold", col="#3E6E46")
+    txt(ax, 23.0, ym + 12.6, "Shared encoder", fs=5.8, fw="bold", col=C["ink"])
     txt(ax, 23.0, ym - 12.6, "$\\mathbf{h}_n$", fs=6)
     arrow(ax, 11.6, ym, 15.0, ym)
     # gate
     probs = [0.30, 0.05, 0.42, 0.08, 0.09, 0.06][:K]
     gcols = [EXPERT_COL.get(i, "#9E9E9E") for i in range(K)]
     Gl.softmax_bars(ax, 36.0, ym - 4.0, 13.0, 10.0, probs, gcols, top={0, 2})
-    txt(ax, 42.5, ym + 9.0, "Gating network", fs=5.8, fw="bold", col="#3E6E46")
+    txt(ax, 42.5, ym + 9.0, "Gating network", fs=5.8, fw="bold", col=C["ink"])
     txt(ax, 42.5, ym - 7.6, "$\\mathbf{p}_n$ = softmax, top-2", fs=5.4)
     arrow(ax, 31.0, ym, 35.2, ym)
     # experts
@@ -193,51 +193,53 @@ def panel_b(ax, K):
         p = box(ax, 56.2, ya, 69.8, ya + eh, "white", col, lw=0.8 if i in EXPERT_COL else 0.5, r=0.6, z=4, track=False)
         Gl.layers(ax, 57.4, ya + 0.4, 61.0, ya + eh - 0.4, [2, 2], col, r=0.35, links=True)
         txt(ax, 65.6, ya + eh / 2, f"$e_{{{i + 1}}}$", p, fs=5.6, col=col if i in EXPERT_COL else "#757575")
-    txt(ax, 63.0, ym + tot / 2 + 3.4, "Experts", fs=5.8, fw="bold", col="#3E6E46")
+    txt(ax, 63.0, ym + tot / 2 + 3.4, "Experts", fs=5.8, fw="bold", col=C["ink"])
     for i, lab in labs.items():
-        txt(ax, 63.0, ym - tot / 2 - 3.6 - 2.9 * i, lab, fs=5.0, col=EXPERT_COL[i])
+        yy = ym - tot / 2 - 3.6 - 2.9 * i
+        ax.add_patch(Rectangle((55.6, yy - 0.9), 1.8, 1.8, fc=EXPERT_COL[i], ec="none", zorder=5))
+        txt(ax, 58.4, yy, lab, fs=5.0, ha="left")
     arrow(ax, 50.0, ym, 54.6, ym)
     # mixture and latent
     ax.add_patch(Circle((75.5, ym), 2.2, fc="white", ec=INK, lw=0.6, zorder=5))
     txt(ax, 75.5, ym, "Σ", fs=7)
     txt(ax, 75.5, ym - 4.6, "$\\sum_k g_{nk} e_k$", fs=5.2)
     arrow(ax, 71.2, ym, 73.2, ym)
-    Gl.gaussian(ax, 87.0, ym - 3.0, 11.0, 7.0, "#3E6E46")
-    txt(ax, 87.0, ym + 8.0, "Latent $\\mathbf{z}_n$", fs=5.8, fw="bold", col="#3E6E46")
+    Gl.gaussian(ax, 87.0, ym - 3.0, 11.0, 7.0, "#33475B")
+    txt(ax, 87.0, ym + 8.0, "Latent $\\mathbf{z}_n$", fs=5.8, fw="bold", col=C["ink"])
     txt(ax, 87.0, ym - 6.4, "$\\mathcal{N}(\\mu, \\sigma^2)$", fs=5.4)
     arrow(ax, 77.8, ym, 81.2, ym)
     # decoder with technology
     Gl.layers(ax, 97.0, ym - 10, 111.0, ym + 10, [4, 5, 6], ec)
-    txt(ax, 104.0, ym + 12.6, "Decoder", fs=5.8, fw="bold", col="#3E6E46")
+    txt(ax, 104.0, ym + 12.6, "Decoder", fs=5.8, fw="bold", col=C["ink"])
     arrow(ax, 92.8, ym, 96.0, ym)
     tp = box(ax, 106.0, 100.5, 127.0, 105.5, "white", "#8C8C8C", r=0.8, z=4, name="tech")
     txt(ax, 116.5, 103.0, "technology (sc / sn)", tp, fs=5.2)
     arrow(ax, 111.0, 105.5, 111.0, ym - 9.0, col="#8C8C8C")
-    Gl.nb_bars(ax, 116.5, ym - 4.0, 12.0, 9.0, "#3E6E46")
-    txt(ax, 122.5, ym + 8.0, "Negative binomial", fs=5.8, fw="bold", col="#3E6E46")
+    Gl.nb_bars(ax, 116.5, ym - 4.0, 12.0, 9.0, "#33475B")
+    txt(ax, 122.5, ym + 8.0, "Negative binomial", fs=5.8, fw="bold", col=C["ink"])
     txt(ax, 122.5, ym - 7.0, "$\\mu_{ng} = l_n \\rho_{ng}$, $\\theta_{tg}$", fs=5.2)
     arrow(ax, 112.0, ym, 115.6, ym)
     # heads
     cp = box(ax, 28.0, 87.0, 60.0, 96.5, "white", C["red"], r=1.0, z=4, name="cond")
-    txt(ax, 44.0, 93.6, "Condition classifier on routing", cp, fs=5.6, fw="bold", col=C["red"])
+    txt(ax, 44.0, 93.6, "Condition classifier on routing", cp, fs=5.6, fw="bold")
     txt(ax, 44.0, 89.6, "$\\mathbf{W}_c\\mathbf{p}_n$: DKD vs HKD", cp, fs=5.4)
     arrow(ax, 42.5, ym - 9.4, 42.5, 96.5, col=C["red"])
     dp = box(ax, 70.0, 87.0, 104.0, 96.5, "white", "#8C8C8C", r=1.0, z=4, name="disc")
-    txt(ax, 87.0, 93.6, "Technology discriminator", dp, fs=5.6, fw="bold", col="#666666")
+    txt(ax, 87.0, 93.6, "Technology discriminator", dp, fs=5.6, fw="bold")
     txt(ax, 87.0, 89.6, "gradient reversal $-\\lambda\\nabla$", dp, fs=5.4)
     arrow(ax, 87.0, ym - 7.6, 87.0, 96.5, col="#8C8C8C")
     # loss
     lb = box(ax, 133.5, 87.0, 172.5, 142.0, "white", ec, r=1.0, z=3, name="loss")
-    txt(ax, 153.0, 138.2, "Training objective", lb, fs=6.2, fw="bold", col="#3E6E46")
-    lines = [("$\\mathcal{L}_{\\mathrm{rec}}$", "negative binomial reconstruction", "#3E6E46"),
-             ("$+\\,\\beta\\,\\mathcal{L}_{\\mathrm{KL}}$", "latent prior", "#3E6E46"),
-             ("$+\\,\\lambda_{\\mathrm{bal}}\\mathcal{L}_{\\mathrm{bal}}$", "use of all experts", "#3E6E46"),
+    txt(ax, 153.0, 138.2, "Training objective", lb, fs=6.2, fw="bold", col=C["ink"])
+    lines = [("$\\mathcal{L}_{\\mathrm{rec}}$", "negative binomial reconstruction", "#33475B"),
+             ("$+\\,\\beta\\,\\mathcal{L}_{\\mathrm{KL}}$", "latent prior", "#33475B"),
+             ("$+\\,\\lambda_{\\mathrm{bal}}\\mathcal{L}_{\\mathrm{bal}}$", "use of all experts", "#33475B"),
              ("$+\\,\\lambda_{\\mathrm{cond}}\\mathcal{L}_{\\mathrm{cond}}$", "diagnosis through routing", C["red"]),
              ("$+\\,\\lambda_{\\mathrm{adv}}\\mathcal{L}_{\\mathrm{adv}}$", "technology removed", "#666666")]
     txt(ax, 136.0, 131.5, "$\\mathcal{L}\\;=$", lb, fs=6.4, ha="left")
     for i, (eq, d, col) in enumerate(lines):
         yy = 131.5 - i * 8.6
-        txt(ax, 143.0, yy, eq, lb, fs=6.4, ha="left", col=col)
+        txt(ax, 143.0, yy, eq, lb, fs=6.4, ha="left")
         txt(ax, 143.0, yy - 3.6, d, lb, fs=5.0, ha="left", col="#555555")
 
 
