@@ -3,6 +3,7 @@
 # (AKI/other) libraries on the unchanged core-group consensus and remerge.
 set -uo pipefail
 HERE=$(cd "$(dirname "$0")" && pwd); LOG=$HERE/../../logs
+mkdir -p "$LOG"
 source "$(conda info --base)/etc/profile.d/conda.sh" && conda activate project016
 cd "$HERE"
 until grep -q "done:" "$LOG/data_download_multiome.log" && grep -q "multiome build finished" "$LOG/data_run_multiome.log"; do sleep 300; done

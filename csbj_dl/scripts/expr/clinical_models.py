@@ -137,7 +137,7 @@ def main():
     a = ap.parse_args()
     cfg = load_cfg("expr"); pc = cfg["groups_clinical"]["clinical"]; out = result_dir("expr_clinical_models")
     P = participant_table(cfg, cfg["groups_clinical"]["min_site_participants"]).join(readout_table(), how="inner")
-    scores = ["moe", "no_experts", "M1", "M3", "sup_injured", "sup_patient", "M1_train_only", "M3_train_only", "moe_train_z"]
+    scores = ["moe", "no_experts", "M1", "M3", "sup_injured", "sup_patient", "M1_train_only", "M3_train_only", "moe_train_z", "nonmoe_Lpos", "nonmoe_Lneg"]
     for f in a.extra:
         E = pd.read_csv(f, sep="\t", dtype={"participant": str}).set_index("participant")
         P = P.join(E); scores += list(E.columns)

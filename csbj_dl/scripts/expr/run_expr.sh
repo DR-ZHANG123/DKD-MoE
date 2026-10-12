@@ -6,6 +6,7 @@ set -euo pipefail
 ROOT=$(cd "$(dirname "$0")/../../.." && pwd); cd "$ROOT"
 source "$(conda info --base)/etc/profile.d/conda.sh" && conda activate project016
 L=csbj_dl/logs; S=csbj_dl/scripts; NW=${1:-6}; DEV=${2:-cpu}; DA="--device $DEV --threads 24"
+mkdir -p "$L"
 python $S/common/make_splits.py              > $L/expr_splits.log 2>&1
 python $S/expr/kpmp_labels.py sn               > $L/expr_labels_sn.log 2>&1
 python $S/expr/kpmp_labels.py sc               > $L/expr_labels_sc.log 2>&1

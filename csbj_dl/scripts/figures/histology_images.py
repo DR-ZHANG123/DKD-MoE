@@ -83,7 +83,7 @@ def smooth(a, sigma=SIGMA_PX):
     return gaussian_filter(a, sigma)
 
 
-def panel_sig_pair(fig, ax_m, ax_i, cax, out_name="Fig8_d_signature_pair"):
+def panel_sig_pair(fig, ax_m, ax_i, cax, out_name="FigS_histology_d_signature_pair"):
     """Measured vs image-side transfer-signature score on the same H&E section (native-resolution track).
     Both maps are standardised within the section for display (z), so they share one colour scale."""
     sec = pd.read_csv(S.SRC / "align_sig_heatmap_section.tsv", sep="\t", dtype={"participant": str}).iloc[0]
@@ -122,7 +122,7 @@ SHORT_GROUP = {"DM_noCKD": "Diabetes", "HKD_withDM": "HKD + diabetes", "Referenc
                "AKI": "AKI", "CKD_other": "Other CKD", "CKD_unadjudicated": "CKD"}
 
 
-def panel_patches(axes_hi, axes_lo, which="signature", out_name="Fig8_e_patches"):
+def panel_patches(axes_hi, axes_lo, which="signature", out_name="FigS_histology_e_patches"):
     """Highest/lowest-scoring patches and their pixel attributions (one patch per participant, as selected by the
     alignment stage); which = 'signature' (transfer-signature direction) or 'direction' (DKD-HKD direction)."""
     sub, col = PATCH_SETS[which]

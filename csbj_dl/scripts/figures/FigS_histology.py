@@ -1,4 +1,4 @@
-"""Fig. 8 — H&E morphology aligned to spot expression.
+"""Supplementary figure — H&E morphology aligned to spot expression.
 
 (a) cross-modal retrieval: per-participant median rank of the true expression profile among candidate spots of the
     same section (image query; lower is better; 0.5 = chance), aligned model vs shuffled-pair baseline.
@@ -44,8 +44,8 @@ def panel_a(ax):
         t = t[(t.model == "aligned_within_section") & (t.eval_set == ev) & (t.metric == "median_rank_pct_img2expr")]
         tests.append(t.assign(track=track))
     d = pd.concat(rows); T = pd.concat(tests)
-    S.src_out(d[["participant", "group", "eval_set", "track", "model", "median_rank_pct_img2expr"]], "Fig8_a_retrieval")
-    S.src_out(T, "Fig8_a_tests")
+    S.src_out(d[["participant", "group", "eval_set", "track", "model", "median_rank_pct_img2expr"]], "FigS_histology_a_retrieval")
+    S.src_out(T, "FigS_histology_a_tests")
     pos, data, cols = [], [], []
     for k, (ev, track, lab) in enumerate(COH):
         for j, (model, c) in enumerate([("aligned_within_section", "#8172B3"), ("shuffled_within_section", "#BFBFBF")]):
@@ -74,7 +74,7 @@ def panel_b(ax):
              load_track("align_lowres_sig_within_section_correlations.tsv",
                         "align_sig_lowres/within_section_summary.tsv", "gse339455", "GSE339455", "matched")]
     within_box(ax, parts, "measured_sig", "Within-section ρ, image-side\nvs measured signature",
-               "Fig8_b_signature_agreement")
+               "FigS_histology_b_signature_agreement")
 
 
 def panel_c(ax):
@@ -84,7 +84,7 @@ def panel_c(ax):
                         "gse211785", "GSE211785", "native"),
              load_track("align_lowres_sig_within_section_correlations.tsv",
                         "align_sig_lowres/within_section_summary.tsv", "gse339455", "GSE339455", "matched")]
-    morph_dots(ax, parts, MORPH_SIG, "Fig8_c_signature_morphology", v=0.4)
+    morph_dots(ax, parts, MORPH_SIG, "FigS_histology_c_signature_morphology", v=0.4)
 
 
 def main():
@@ -129,7 +129,7 @@ def main():
     S.letter_at(fig, 0.003, yd, "d")
     tt = [t for t in fig.texts if t.get_text().startswith("Highest image-side")][0]
     S.letter_at(fig, 0.003, inv.transform_bbox(tt.get_window_extent(r)).y1 + 0.004, "e")
-    S.save(fig, "Fig8_histology")
+    S.save(fig, "FigS_histology")
 
 
 if __name__ == "__main__":

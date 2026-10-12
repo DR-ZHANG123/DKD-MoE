@@ -262,10 +262,10 @@ groups_clinical:
     cv_folds: 5
     cv_repeats: 50
     n_jobs: 48
-    resampled_readouts: [moe, no_experts, M3, M1, M3_train_only]   # bootstrap and cross-validated value only for these
+    resampled_readouts: [moe, no_experts, M3, M1, M3_train_only, nonmoe_Lpos]   # bootstrap and cross-validated value only for these
     paired_gain_boot: 500         # participant bootstrap of the paired cross-validated gain (repeats per resample below)
     paired_gain_repeats: 10
-    paired_pairs: [[M3, no_experts], [M3, moe], [M3_train_only, no_experts]]
+    paired_pairs: [[M3, no_experts], [M3, moe], [M3_train_only, no_experts], [M3_train_only, nonmoe_Lpos]]
 # Cell annotation, cell quality, technology agreement and non-PT RNA checks (scripts/expr/readout_robustness.py)
 robustness:
   min_cells_subset: 10          # injured-PT cells per participant x technology in annotation / quality subsets

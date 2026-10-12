@@ -5,7 +5,7 @@
 #        ALIGN_TRACK=lowres ALIGN_DEVICE=cuda:5 bash run_track_full.sh
 cd "$(dirname "$0")/../../.."
 source "$(conda info --base)/etc/profile.d/conda.sh" && conda activate project016
-A=csbj_dl/scripts/align
+A=csbj_dl/scripts/align; mkdir -p csbj_dl/logs
 if [ "${ALIGN_TRACK:-}" = "lowres" ]; then
   CK=/path/to/project016_data/csbj_dl_ckpt/align_lowres; L=csbj_dl/logs/align_lowres
 else

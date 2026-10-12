@@ -1,4 +1,6 @@
-"""Fig. 3 — the mixture-of-experts readout against other approaches, model variants and forms of supervision.
+"""Panels: comparison methods, model variants, technology mixing and forms of supervision (used by Fig2_model.py and FigS_comparison_external.py).
+
+Original figure description — Fig. 3 — the mixture-of-experts readout against other approaches, model variants and forms of supervision.
 
 Sources (results/bench_summary/, harmonised with the expression readout; external cohorts = mean of the five fold
 models): summary_table.tsv (AUC / Hedges' g with 95% CI, means over seeds), paired_vs_moe_final.tsv (paired
@@ -55,7 +57,7 @@ def table(Sm, P):
                          g211_hi=r.GSE211785_DKD_vs_HKD_g_hi, g195=r.GSE195460_DKD_vs_Control_g,
                          g195_lo=r.GSE195460_DKD_vs_Control_g_lo, g195_hi=r.GSE195460_DKD_vs_Control_g_hi))
     d = pd.DataFrame(recs)
-    S.src_out(d.drop(columns="method"), "Fig3_ab_methods")
+    S.src_out(d.drop(columns="method"), "cmp_ab_methods")
     return d
 
 
@@ -81,7 +83,7 @@ def panel_c(ax):
     recs = [dict(method=m, label=l, family=f, kNN30_same_tech=M.loc[m, "kNN30_same_tech"],
                  healthy_PT=M.loc[m, "kNN30_same_tech_healthy_PT"], injured_PT=M.loc[m, "kNN30_same_tech_injured_PT"])
             for m, l, f in MIX]
-    d = S.src_out(pd.DataFrame(recs), "Fig3_c_mixing")
+    d = S.src_out(pd.DataFrame(recs), "cmp_c_mixing")
     y = np.arange(len(d))[::-1]
     ax.barh(y, d.kNN30_same_tech, color=[FAM_COL[f] for f in d.family], height=0.6, ec="white", lw=0.3)
     ax.scatter(d.healthy_PT, y + 0.0, marker="|", s=40, color=S.INK, lw=0.8, zorder=3, label="Healthy PT")
@@ -102,7 +104,7 @@ def panel_d(ax, P):
         r = P[P.method == f"{v}/{sc}"].iloc[0]
         recs.append(dict(variant=v, variant_label=vl.replace("\n", " "), score=sc, auc_diff=r.auc_diff_vs_moe_final,
                          ci_lo=r.ci_lo, ci_hi=r.ci_hi, n_dkd=int(r.n_DKD), n_hkd=int(r.n_HKD)))
-    d = S.src_out(pd.DataFrame(recs), "Fig3_d_variants")
+    d = S.src_out(pd.DataFrame(recs), "cmp_d_variants")
     y = np.arange(len(d))[::-1]
     ax.errorbar(d.auc_diff, y, xerr=[d.auc_diff - d.ci_lo, d.ci_hi - d.auc_diff], fmt="o", ms=3.6, color="#C44E52",
                 ecolor="#C44E52", elinewidth=0.8, capsize=1.6)
@@ -120,7 +122,7 @@ SUP = [("cell", "Cell level\n(final model)"), ("injured", "Injured cells\nonly")
 
 def panel_e(ax1, ax2):
     T = S.read("expr_supervision/summary.tsv").set_index("supervision")
-    d = S.src_out(T.loc[[k for k, _ in SUP]].reset_index(), "Fig3_e_supervision")
+    d = S.src_out(T.loc[[k for k, _ in SUP]].reset_index(), "cmp_e_supervision")
     y = np.arange(len(SUP))[::-1]
     for yi, r in zip(y, d.itertuples()):
         ax1.plot([r.auc_lo, r.auc_hi], [yi, yi], color="#C44E52", lw=0.9)
@@ -129,42 +131,11 @@ def panel_e(ax1, ax2):
     ax1.axvline(0.5, color=S.GREY, lw=0.6, ls="--")
     ax1.set_yticks(y); ax1.set_yticklabels([l for _, l in SUP], fontsize=5.8); ax1.tick_params(axis="y", length=0)
     ax1.set_xlim(0.45, 1.06); ax1.set_ylim(-0.6, len(SUP) - 0.4)
-    ax1.set_xlabel("Held-out AUC (95% CI)", fontsize=6.3)
+    ax1.set_xlabel("Held-out AUC\n(95% CI)", fontsize=6.3)
     h = 0.36
     ax2.barh(y + h / 2, d.routing_gap_in_sample, height=h, color="#8C8C8C", label="Training participants")
     ax2.barh(y - h / 2, d.routing_gap_heldout, height=h, color="#C44E52", label="Held-out participants")
     ax2.set_yticks(y); ax2.set_yticklabels([]); ax2.tick_params(axis="y", length=0); ax2.set_ylim(-0.6, len(SUP) - 0.4)
     ax2.set_xlim(0, 1.0)
-    ax2.set_xlabel("Largest DKD-HKD difference in routing\nof injured cells to one expert", fontsize=6.3)
-    ax2.legend(loc="lower center", bbox_to_anchor=(0.5, 1.0), ncol=2, fontsize=5.6, frameon=False, handlelength=1.0)
-
-
-def main():
-    S.setup()
-    Sm = S.read("bench_summary/summary_table.tsv"); P = S.read("bench_summary/paired_vs_moe_final.tsv")
-    d = table(Sm, P)
-    fig = plt.figure(figsize=(S.MAX_W - 0.3, 8.0))
-    g1 = fig.add_gridspec(1, 4, wspace=0.12, left=0.29, right=0.985, top=0.955, bottom=0.69)
-    ax1, ax2, ax3, ax4 = (fig.add_subplot(g1[0, i]) for i in range(4))
-    forest(ax1, d, "kpmp_auc", "kpmp_auc_lo", "kpmp_auc_hi", 0.5, "AUC (95% CI)", "KPMP held-out", labels=True)
-    forest(ax2, d, "auc_diff", "diff_lo", "diff_hi", 0.0, "AUC difference\nvs final model", "Paired difference")
-    forest(ax3, d, "g211", "g211_lo", "g211_hi", 0.0, "Hedges' g (95% CI)", "GSE211785, DKD vs HKD")
-    forest(ax4, d, "g195", "g195_lo", "g195_hi", 0.0, "Hedges' g (95% CI)", "GSE195460, DKD vs control")
-    ax1.set_xlim(0.35, 1.0); ax2.set_xlim(-0.4, 0.25)
-    g2 = fig.add_gridspec(1, 2, width_ratios=[1, 1.05], wspace=0.55, left=0.24, right=0.985, top=0.53,
-                          bottom=0.33)
-    axc, axd = fig.add_subplot(g2[0, 0]), fig.add_subplot(g2[0, 1])
-    panel_c(axc); panel_d(axd, P)
-    g3 = fig.add_gridspec(1, 2, wspace=0.12, left=0.24, right=0.86, top=0.2, bottom=0.07)
-    axe1, axe2 = fig.add_subplot(g3[0, 0]), fig.add_subplot(g3[0, 1])
-    panel_e(axe1, axe2)
-    alt = d[d.n_dkd_paired != d.n_dkd_paired.iloc[0]]
-    if len(alt):
-        fig.text(0.01, 0.605, f"† paired difference on the {alt.n_dkd_paired.iloc[0]} DKD and {alt.n_hkd_paired.iloc[0]} HKD "
-                 "participants scored by both methods", fontsize=5.5, color="#555555", ha="left")
-    S.letters(fig, [[(ax1, "a"), (ax3, "b")], [(axc, "c"), (axd, "d")], [(axe1, "e"), (axe2, "")]])
-    S.save(fig, "Fig3_comparison")
-
-
-if __name__ == "__main__":
-    main()
+    ax2.set_xlabel("Largest DKD-HKD routing\ndifference, injured cells", fontsize=6.3)
+    ax2.legend(loc="lower center", bbox_to_anchor=(0.5, 1.0), ncol=1, fontsize=5.6, frameon=False, handlelength=1.0)

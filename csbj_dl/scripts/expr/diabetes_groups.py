@@ -76,7 +76,7 @@ def main():
     P = participant_table(cfg, pc["min_site_participants"]).join(readout_table(), how="inner")
     P.to_csv(out / "participant_table.tsv", sep="\t")
     tests, models = [], []
-    for score in ("moe", "no_experts", "M1", "M3", "M3_train_only"):
+    for score in ("moe", "no_experts", "M1", "M3", "M3_train_only", "nonmoe_Lpos"):
         for a, b in pc["group_comparisons"]:
             tests.append({"readout": score, "comparison": f"{a}_vs_{b}",
                           **hedges_g(P.loc[P.group == a, score], P.loc[P.group == b, score])})

@@ -5,6 +5,7 @@
 set -uo pipefail
 HERE=$(cd "$(dirname "$0")" && pwd)
 LOG=$HERE/../../logs
+mkdir -p "$LOG"
 source "$(conda info --base)/etc/profile.d/conda.sh" && conda activate project016
 cd "$HERE"
 until python 03a_multiome_peaks.py >> "$LOG/data_multiome_03a.log" 2>&1; do sleep 300; done

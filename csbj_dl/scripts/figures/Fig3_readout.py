@@ -1,4 +1,4 @@
-"""Fig. 4 — the participant readout by diagnosis and diabetes, and its decomposition into expert contributions.
+"""Fig. 3 — the participant readout by diagnosis and diabetes, and its decomposition into expert contributions.
 
 (a) KPMP held-out participants (each scored by the partition models that never saw them; seed-mean log-odds) by
 group (results/expr_diabetes_groups/{participant_table,group_tests}.tsv);
@@ -32,7 +32,7 @@ def panel_a(ax):
     P = S.read("expr_diabetes_groups/participant_table.tsv", dtype={"participant": str})
     T = S.read("expr_diabetes_groups/group_tests.tsv"); T = T[T.readout == "moe"].set_index("comparison")
     d = P[P.group.isin(GROUPS)]
-    S.src_out(d[["participant", "group", "moe", "n_cells"]].rename(columns={"moe": "readout"}), "Fig4_a_groups")
+    S.src_out(d[["participant", "group", "moe", "n_cells"]].rename(columns={"moe": "readout"}), "Fig3_a_groups")
     data = [d[d.group == g].moe.values for g in GROUPS]
     S.strip_box(ax, data, range(len(GROUPS)), [S.GROUP_COL[g] for g in GROUPS], s=4)
     ax.set_xticks(range(len(GROUPS)))
@@ -43,13 +43,13 @@ def panel_a(ax):
                                   (1, 4, "DKD_vs_HKD")], [0.35, 0.35, 1.3, 2.25]):
         r = T.loc[comp]; rows.append(r)
         bracket(ax, i, j, top + lev, f"g = {r.g:.2f}, {S.fmt_p(r.p_wilcoxon)}")
-    S.src_out(pd.DataFrame(rows).reset_index(), "Fig4_a_tests")
+    S.src_out(pd.DataFrame(rows).reset_index(), "Fig3_a_tests")
     ax.set_ylim(ax.get_ylim()[0], top + 3.1)
 
 
 def panel_b(ax, P, T):
     d = P[(P.cohort == "KPMP_heldout") & P.tech.isin(["sc", "sn"]) & P.group.isin(["HKD", "DKD"])]
-    S.src_out(d[["participant", "tech", "group", "logodds", "n_cells"]], "Fig4_b_sc_sn")
+    S.src_out(d[["participant", "tech", "group", "logodds", "n_cells"]], "Fig3_b_sc_sn")
     pos, data, cols, labs = [], [], [], []
     for k, tech in enumerate(["sc", "sn"]):
         for j, g in enumerate(["HKD", "DKD"]):
@@ -64,7 +64,7 @@ def panel_b(ax, P, T):
         bracket(ax, k * 2.6, k * 2.6 + 1, top + 0.35, f"g = {r.g:.2f}\n{S.fmt_p(r.p_wilcoxon)}")
         ax.text(k * 2.6 + 0.5, top + 1.75, S.TECH_LABEL[tech], ha="center", va="bottom", fontsize=6.5,
                 fontweight="bold")
-    S.src_out(pd.DataFrame(rows), "Fig4_b_tests")
+    S.src_out(pd.DataFrame(rows), "Fig3_b_tests")
     ax.set_ylim(ax.get_ylim()[0], top + 2.35)
     ax.set_ylabel("Readout (log-odds)")
 
@@ -94,7 +94,7 @@ def panel_c(ax):
         for t, tl in terms:
             r = M[(M.readout == sc) & (M.model == "adjusted_egfr") & (M.term == t)].iloc[0]
             rows.append(dict(readout=sc, term=t, label=f"{sl}: {tl}", beta=r.beta, lo=r.ci_low, hi=r.ci_high, p=r.p, n=int(r.n)))
-    d = S.src_out(pd.DataFrame(rows), "Fig4_c_models")
+    d = S.src_out(pd.DataFrame(rows), "Fig3_c_models")
     y = forest(ax, d.label, d.beta, d.lo, d.hi, [col[t] for t in d.term])
     xr = d.hi.max() + 0.12
     for yi, p in zip(y, d.p):
@@ -110,7 +110,7 @@ def panel_d(axs):
     T = S.read("expr_heldout_experts/contribution_tests.tsv").set_index(["expert", "comparison"])
     grp = ["HKD", "HKD_withDM", "DM_noCKD", "DKD"]
     d = C[C.group.isin(grp)]
-    S.src_out(d[["participant", "group", "M1", "M3"]], "Fig4_d_contributions")
+    S.src_out(d[["participant", "group", "M1", "M3"]], "Fig3_d_contributions")
     rows = []
     for ax, m, title in zip(axs, ["M1", "M3"], ["HKD-weighted expert (M1)", "DKD-weighted expert (M3)"]):
         data = [d[d.group == g][m].values for g in grp]
@@ -124,7 +124,7 @@ def panel_d(axs):
             bracket(ax, i, j, top + lev * span, f"g = {r.g:.2f}, {S.fmt_p(r.p_wilcoxon)}", h=0.03 * span)
         ax.set_ylim(ax.get_ylim()[0], top + 0.7 * span)
     axs[0].set_ylabel("Contribution to readout\n(log-odds)")
-    S.src_out(pd.DataFrame(rows), "Fig4_d_tests")
+    S.src_out(pd.DataFrame(rows), "Fig3_d_tests")
 
 
 def main():
@@ -139,7 +139,7 @@ def main():
     axc, axd1, axd2 = fig.add_subplot(g2[0, 0]), fig.add_subplot(g2[0, 1]), fig.add_subplot(g2[0, 2])
     panel_a(axa); panel_b(axb, P, T); panel_c(axc); panel_d([axd1, axd2])
     S.letters(fig, [[(axa, "a"), (axb, "b")], [(axc, "c"), (axd1, "d")]])
-    S.save(fig, "Fig4_readout")
+    S.save(fig, "Fig3_readout")
 
 
 if __name__ == "__main__":

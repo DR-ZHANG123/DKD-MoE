@@ -3,6 +3,7 @@
 # a full annotation pass to write its complete manifest, then the Visium and pathomics tables.
 set -uo pipefail
 HERE=$(cd "$(dirname "$0")" && pwd); LOG=$HERE/../../logs
+mkdir -p "$LOG"
 source "$(conda info --base)/etc/profile.d/conda.sh" && conda activate project016
 cd "$HERE"
 until grep -q "done:" "$LOG/data_download_visium.log" && grep -q "done:" "$LOG/data_download_pathomics.log"; do sleep 120; done

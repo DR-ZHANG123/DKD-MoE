@@ -1,8 +1,10 @@
-"""Fig. 2 — choice of the number of experts, seed stability and reproducible meta-experts.
+"""Panels: model selection, seed agreement, reproducible experts and their external contributions (used by Fig2_model.py and FigS_comparison_external.py).
+
+Original figure description — Fig. 2 — choice of the number of experts, seed stability and reproducible meta-experts.
 
 (a) held-out participant cross-validation over K x condition weight (results/expr_cv/cv_table.tsv);
-(b) agreement between the five random initializations on held-out KPMP participants (results/expr_stability/random_vs_warm.tsv,
-    row warm_start_seeds1-5);
+(b) agreement between the five random initializations on held-out KPMP participants (results/expr_stability/before_after.tsv,
+    row after_seeds1-5);
 (c) meta-experts across five seeds: presence and condition-head weight per seed (results/expr_meta/units.tsv,
     meta_experts.tsv); (d) out-of-sample meta-expert contributions per donor in GSE211785 and GSE195460
     (results/expr_readout/meta_contributions.tsv, meta_contribution_tests.tsv)."""
@@ -26,7 +28,7 @@ def panel_a(ax, cax_note=None):
             ("stability_ari", "Seed\nARI", True, "{:.2f}"), ("rank_sum", "Rank\nsum", False, "{:.0f}")]
     out = cv[["K", "w_cond", "eligible"] + [c for c, *_ in cols]].copy()
     out["selected"] = (out.K == sel["K"]) & (out.w_cond == sel["w_cond"])
-    S.src_out(out, "Fig2_a_cv_table")
+    S.src_out(out, "sel_a_cv_table")
     n, m = len(out), len(cols)
     M = np.zeros((n, m))
     for j, (c, _, hi, _) in enumerate(cols):
@@ -53,10 +55,10 @@ def panel_a(ax, cax_note=None):
 
 
 def panel_b(ax):
-    r = S.read("expr_stability/random_vs_warm.tsv").set_index("run").loc["warm_start_seeds1-5"]
+    r = S.read("expr_stability/before_after.tsv").set_index("run").loc["after_seeds1-5"]
     rows = [("Expert\nassignment\nARI", r.seed_ari), ("Matched\nexpert\ncorrelation", r.seed_matched_r),
             ("Readout\nICC", r.logodds_icc_2_1), ("DKD vs HKD\nAUC", r.auc_dkd_hkd_seedmean_logodds)]
-    d = S.src_out(pd.DataFrame(rows, columns=["metric", "value"]), "Fig2_b_stability")
+    d = S.src_out(pd.DataFrame(rows, columns=["metric", "value"]), "sel_b_stability")
     x = np.arange(len(d))
     ax.bar(x, d.value, 0.55, color="#55A868", ec="white", lw=0.3)
     for xi, v in zip(x, d.value):
@@ -74,8 +76,8 @@ def panel_c(ax, axb):
     P = P.reindex(index=seeds, columns=order)
     long = P.reset_index().melt(id_vars="seed", var_name="meta_expert", value_name="head_weight")
     long["present"] = long.head_weight.notna()
-    S.src_out(long, "Fig2_c_presence")
-    S.src_out(me[["meta_expert", "n_seeds", "head_weight", "reproducible", "mean_within_r"]], "Fig2_c_head_weight")
+    S.src_out(long, "sel_c_presence")
+    S.src_out(me[["meta_expert", "n_seeds", "head_weight", "reproducible", "mean_within_r"]], "sel_c_head_weight")
     v = np.nanmax(np.abs(P.values)); norm = TwoSlopeNorm(0, -v, v)
     ax.set_facecolor("white")
     for i, s in enumerate(seeds):
@@ -117,9 +119,9 @@ def panel_d(axes):
     T = S.read("expr_readout/meta_contribution_tests.tsv")
     me = S.read("expr_meta/meta_experts.tsv"); rep = me[me.reproducible].meta_expert.tolist()
     C = C[(C.tech == "pooled") & C.cohort.isin(["gse211785", "gse195460"])]
-    S.src_out(C[["participant", "cohort", "group"] + rep], "Fig2_d_external_contributions")
+    S.src_out(C[["participant", "cohort", "group"] + rep], "sel_d_external_contributions")
     tt = T[(T.tech == "pooled") & T.cohort.isin(["gse211785", "gse195460"]) & T.feature.isin(rep)]
-    S.src_out(tt, "Fig2_d_tests")
+    S.src_out(tt, "sel_d_tests")
     pos = [0, 1, 2, 3.6, 4.6]; rng = np.random.default_rng(0)
     for ax, m in zip(axes, rep):
         for x, (coh, g) in zip(pos, GROUPS_EXT):
@@ -148,25 +150,3 @@ def panel_d(axes):
     axes[-1].text(4.1, -0.62, "GSE195460", transform=axes[-1].get_xaxis_transform(), ha="center", va="top",
                   fontsize=6, fontweight="bold")
     axes[0].set_title("Meta-expert contribution per donor (head weight × routing)", fontsize=6.2, pad=3)
-
-
-def main():
-    S.setup()
-    fig = plt.figure(figsize=(S.MAX_W - 0.2, 5.3))
-    gs = fig.add_gridspec(2, 2, width_ratios=[1.25, 1], height_ratios=[1, 1.08], hspace=0.5, wspace=0.42,
-                          left=0.13, right=0.985, top=0.9, bottom=0.11)
-    axa = fig.add_subplot(gs[0, 0]); axb = fig.add_subplot(gs[0, 1])
-    sub = gs[1, 0].subgridspec(2, 1, height_ratios=[1.35, 1], hspace=0.12)
-    axc = fig.add_subplot(sub[0]); axc2 = fig.add_subplot(sub[1])
-    subd = gs[1, 1].subgridspec(3, 1, hspace=0.12)
-    axd = [fig.add_subplot(subd[k]) for k in range(3)]
-    panel_a(axa); panel_b(axb); cb = panel_c(axc, axc2); panel_d(axd)
-    pos, pos2 = axc.get_position(), axc2.get_position()
-    fig.canvas.draw()
-    axc2.set_position([pos2.x0, pos2.y0, axc.get_position().width, pos2.height])
-    S.letters(fig, [[(axa, "a"), (axb, "b")], [([axc, axc2], "c"), (axd, "d")]])
-    S.save(fig, "Fig2_selection_stability")
-
-
-if __name__ == "__main__":
-    main()

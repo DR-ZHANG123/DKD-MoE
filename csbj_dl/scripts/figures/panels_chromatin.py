@@ -1,4 +1,6 @@
-"""Fig. 7 — chromatin accessibility of the same nuclei carries the DKD-versus-HKD readout.
+"""Panels: chromatin alignment, motifs and expert components in chromatin (used by Fig6_chromatin.py and FigS_chromatin_alignment.py).
+
+Original figure description — Fig. 7 — chromatin accessibility of the same nuclei carries the DKD-versus-HKD readout.
 
 Sources (results/chrom_*): chrom_readout/retrieval_by_model.tsv (RNA-to-ATAC retrieval among 100 candidate nuclei of
 held-out KPMP participants, aligned vs shuffled pairs; one point per model), participant_scores.tsv, kpmp_tests.tsv,
@@ -35,7 +37,7 @@ def family(name: str) -> str:
 
 def panel_a(ax):
     R = S.read("chrom_readout/retrieval_by_model.tsv")
-    S.src_out(R, "Fig7_a_retrieval")
+    S.src_out(R, "chr_a_retrieval")
     pos, data, cols, ticks, labs, chance = [], [], [], [], [], []
     k = 0
     for f in [x for x in FEAT if x in set(R.feature)]:
@@ -69,7 +71,7 @@ def panel_b(ax_s, ax_g):
     P = P[P.feature == PRIMARY]
     A = S.read("chrom_readout/kpmp_agreement.tsv"); T = S.read("chrom_readout/kpmp_tests.tsv")
     S.src_out(P.drop(columns=[c for c in P.columns if c.startswith("frac_open")], errors="ignore"),
-              "Fig7_b_participants")
+              "chr_b_participants")
     show = ["Reference", "DM_noCKD", "AKI", "HKD", "HKD_withDM", "DKD"]
     for g in [x for x in show if x in set(P.group)]:
         d = P[P.group == g]
@@ -86,7 +88,7 @@ def panel_b(ax_s, ax_g):
     data = [P[P.group == g].chrom_score.values for g in groups]
     t = T[(T.space == PRIMARY) & (T.feature == "chrom_score") &
           T.comparison.isin(["DKD_vs_HKD", "DKD_vs_Reference", "HKD_vs_Reference"])]
-    S.src_out(t, "Fig7_b_tests")
+    S.src_out(t, "chr_b_tests")
     S.strip_box(ax_g, data, range(3), [S.GROUP_COL[g] for g in groups], s=5)
     ax_g.set_xticks(range(3)); ax_g.set_xticklabels([f"{g}\n(n = {len(x)})" for g, x in zip(groups, data)],
                                                     fontsize=5.6)
@@ -105,7 +107,7 @@ def panel_c(ax):
     keys = [("gse195460", "peaks", "DKD_vs_Control"), ("gse195460", "gact", "DKD_vs_Control"),
             ("gse211785", "gact", "DKD_vs_HKD")]
     d = E.loc[[k for k in keys if k in E.index]].reset_index()
-    S.src_out(d, "Fig7_c_external")
+    S.src_out(d, "chr_c_external")
     y = np.arange(len(d))[::-1]
     for yi, r in zip(y, d.itertuples()):
         c = "#C44E52"
@@ -150,7 +152,7 @@ def panel_d(ax_dkd, ax_hkd, n_hkd=10):
                             p_fisher=dk.loc[m, "p_fisher"], rank=dk.loc[m, "rank_in_direction"])
                        for m, f in DKD_SHOW if m in dk.index])
     d2 = hk.sort_values("rank_in_direction").head(n_hkd)[["motif", "log2_or", "q_bh", "p_fisher", "rank_in_direction"]]
-    S.src_out(d1, "Fig7_d_motifs_dkd_side"); S.src_out(d2, "Fig7_d_motifs_hkd_side")
+    S.src_out(d1, "chr_d_motifs_dkd_side"); S.src_out(d2, "chr_d_motifs_hkd_side")
     _motif_bars(ax_dkd, d1, "#C44E52"); _motif_bars(ax_hkd, d2.reset_index(drop=True), "#4C72B0")
     for t, f in zip(ax_dkd.get_yticklabels(), d1.family):
         t.set_color(FAM_COL.get(f, S.INK))
@@ -163,7 +165,7 @@ def panel_e(ax, n_top=10):
     G = G.assign(abs_z=G.sum_z.abs())   # sum_z is signed (HKD-side peaks carry negative z)
     parts = [G[G.direction == "DKD_side"].sort_values("abs_z", ascending=False).head(n_top),
              G[G.direction == "HKD_side"].sort_values("abs_z", ascending=False).head(n_top)]
-    d = S.src_out(pd.concat(parts), "Fig7_e_peak_genes")
+    d = S.src_out(pd.concat(parts), "chr_e_peak_genes")
     labs, vals, cols, npk = [], [], [], []
     for p, col, sgn in [(parts[0], "#C44E52", 1), (parts[1], "#4C72B0", -1)]:
         for r in p.itertuples():
@@ -188,7 +190,7 @@ def panel_f(ax):
     T = S.read("chrom_expert/participant_table.tsv", dtype={"participant": str})
     G = S.read("chrom_expert/group_tests.tsv"); G = G[G.feature == "chrom_M3"].set_index("comparison")
     d = T[T.group.isin(EXP_GROUPS)]
-    S.src_out(d[["participant", "group", "chrom_M3", "rna_M3", "n_cells"]], "Fig7_f_expert_chromatin")
+    S.src_out(d[["participant", "group", "chrom_M3", "rna_M3", "n_cells"]], "chr_f_expert_chromatin")
     data = [d[d.group == g].chrom_M3.values for g in EXP_GROUPS]
     S.strip_box(ax, data, range(4), [S.GROUP_COL[g] for g in EXP_GROUPS], s=4)
     ax.set_xticks(range(4)); ax.set_xticklabels([f"{l}\n(n = {len(x)})" for l, x in
@@ -200,7 +202,7 @@ def panel_f(ax):
         y = top + lev * span
         ax.plot([i, i, j, j], [y - 0.03 * span, y, y, y - 0.03 * span], color=S.INK, lw=0.6)
         ax.text((i + j) / 2, y + 0.01 * span, f"g = {r.g:.2f}, {S.fmt_p(r.p_wilcoxon)}", ha="center", va="bottom", fontsize=5.4)
-    S.src_out(pd.DataFrame(rows).reset_index(), "Fig7_f_tests")
+    S.src_out(pd.DataFrame(rows).reset_index(), "chr_f_tests")
     ax.set_ylim(ax.get_ylim()[0], top + 0.72 * span)
 
 
@@ -212,7 +214,7 @@ def panel_g(ax):
             r = M[(M.motif == key) & (M.component == comp)].iloc[0]
             rows.append(dict(motif=lab, component=comp, partial_spearman=r.partial_spearman, spearman=r.spearman,
                              p=r.partial_p, q=r.partial_q, n=int(r.n)))
-    d = S.src_out(pd.DataFrame(rows), "Fig7_g_motif_vs_expert")
+    d = S.src_out(pd.DataFrame(rows), "chr_g_motif_vs_expert")
     y = np.arange(len(MOTIF_SHOW))[::-1]; h = 0.38
     for k, (comp, col, lab) in enumerate((("M3", "#C44E52", "DKD-weighted expert"), ("M1", "#4C72B0", "HKD-weighted expert"))):
         q = d[d.component == comp]
@@ -229,23 +231,3 @@ def panel_g(ax):
     ax.set_xlim(-0.6, 0.85)
     ax.set_xlabel(f"Spearman with expert contribution\n(n = {d.n.iloc[0]} participants)", fontsize=6)
     ax.legend(loc="lower center", bbox_to_anchor=(0.45, 1.0), ncol=1, fontsize=5.5, frameon=False, handlelength=1.0)
-
-
-def main():
-    S.setup()
-    fig = plt.figure(figsize=(S.MAX_W - 0.3, 8.3))
-    g1 = fig.add_gridspec(1, 3, width_ratios=[1.25, 1, 0.9], wspace=0.5, left=0.08, right=0.985, top=0.955,
-                          bottom=0.73)
-    axa, axb1, axb2 = (fig.add_subplot(g1[0, i]) for i in range(3))
-    axc = fig.add_axes([0.27, 0.47, 0.3, 0.15])
-    axf = fig.add_axes([0.76, 0.43, 0.22, 0.19])
-    axg = fig.add_axes([0.80, 0.05, 0.18, 0.26])
-    g3 = fig.add_gridspec(1, 2, wspace=0.75, left=0.1, right=0.6, top=0.37, bottom=0.05)
-    axd1, axd2 = (fig.add_subplot(g3[0, i]) for i in range(2))
-    panel_a(axa); panel_b(axb1, axb2); panel_c(axc); panel_d(axd1, axd2); panel_f(axf); panel_g(axg)
-    S.letters(fig, [[(axa, "a"), (axb1, "b")], [(axc, "c"), (axf, "e")], [(axd1, "d"), (axg, "f")]], col_align=False)
-    S.save(fig, "Fig7_chromatin")
-
-
-if __name__ == "__main__":
-    main()

@@ -62,6 +62,8 @@ def readout_table() -> pd.DataFrame:
     # with training-participant statistics of each part (nested_calibration.py)
     Tt = pd.read_csv(result_dir("expr_trainonly_experts") / "contributions.tsv", sep="\t", dtype={"participant": str})
     out = out.join(Tt.set_index("participant")[["M1", "M3"]].rename(columns=lambda c: c + "_train_only"))
+    N = pd.read_csv(result_dir("expr_nonmoe_components") / "contributions.tsv", sep="\t", dtype={"participant": str})
+    out = out.join(N.set_index("participant")[["nonmoe_Lpos", "nonmoe_Lneg"]])
     sc = pd.read_csv(result_dir("expr_nested_cv") / "train_scale.tsv", sep="\t")
     sc = sc[sc.pipeline == "reported"].set_index("fold")
     fold = pd.read_csv(CDL / "config/splits.tsv", sep="\t", dtype={"participant": str}).set_index("participant").fold

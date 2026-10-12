@@ -47,8 +47,15 @@ def setup():
         "axes.titleweight": "normal", "lines.linewidth": 0.8})
 
 
+SRC_RENAME: dict[str, str] = {}      # panel modules shared by several figures: old prefix -> figure-specific prefix
+
+
 def src_out(df: pd.DataFrame, name: str):
-    """Save the exact plotting input of a panel as figures/source_data/<name>.tsv."""
+    """Save the exact plotting input of a panel as figures/source_data/<name>.tsv (name rewritten by SRC_RENAME)."""
+    for a, b in SRC_RENAME.items():
+        if name.startswith(a):
+            name = b + name[len(a):]
+            break
     df.to_csv(SRC / f"{name}.tsv", sep="\t", index=False)
     return df
 

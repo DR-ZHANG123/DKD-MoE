@@ -68,10 +68,12 @@ def main():
                 contrib[key][s][te] = v[te]
         print("part", f, asg[-1], flush=True)
     A = pd.DataFrame(asg); A.to_csv(out / "assignments.tsv", sep="\t", index=False)
-    mc = cfg["prep"]["min_cells_per_participant"]; cols = []
+    mc = cfg["prep"]["min_cells_per_participant"]; cols, seedcols = [], []
     for key, d in contrib.items():
         pm = part_means(data.obs, {f"s{s}": v for s, v in d.items()}, mc); pm = pm[pm.tech == "pooled"].set_index("participant")
         cols.append(pm[[f"s{s}" for s in d]].mean(1).rename(key))
+        seedcols.append(pm[[f"s{s}" for s in d]].rename(columns=lambda c, k=key: f"{k.rstrip('t')}_{c}"))
+    S_ = pd.concat(seedcols, axis=1); S_.index.name = "participant"; S_.to_csv(out / "per_seed_contributions.tsv", sep="\t")
     C = pd.concat(cols, axis=1); C.columns = ["M1", "M3"] if list(contrib) == ["M1t", "M3t"] else C.columns
     C = C.rename(columns={"M1t": "M1", "M3t": "M3"})
     C["group"] = data.obs.groupby("participant", observed=True).group.first().astype(str).reindex(C.index)
@@ -86,7 +88,7 @@ def main():
     pd.set_option("display.width", 220)
     print(A.round(3).to_string()); print(pd.DataFrame(ag).round(3)); print(G.round(3).to_string())
     write_provenance("expr_trainonly_experts", [], [out / f for f in ("assignments.tsv", "contributions.tsv", "agreement.tsv",
-                                                                    "group_tests.tsv")], ic["seed"], cfg)
+                                                                    "group_tests.tsv", "per_seed_contributions.tsv")], ic["seed"], cfg)
 
 
 if __name__ == "__main__":

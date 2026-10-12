@@ -1,4 +1,4 @@
-"""Fig. 6 — the DKD-weighted expert contribution and urine albumin and protein in KPMP participants with CKD.
+"""Fig. 5 — the DKD-weighted expert contribution and urine albumin and protein in KPMP participants with CKD.
 
 (a) odds ratio per SD from proportional-odds models of albuminuria and proteinuria bands (DKD, HKD and HKD with
     diabetes), adjusted for injured-cell fraction, diagnosis group and eGFR band (filled) and additionally for age, sex,
@@ -34,7 +34,7 @@ def panel_a(ax):
                                  ci_high=r.ci_high, p=r.p, y=y - 0.34 * k, colour=col))
             yt.append(y - 0.17); ylab.append(lab); y -= 0.95
         y -= 0.25
-    d = S.src_out(pd.DataFrame(rows), "Fig6_a_odds_ratios")
+    d = S.src_out(pd.DataFrame(rows), "Fig5_a_odds_ratios")
     for r in d.itertuples():
         full = r.covariates == "full"
         ax.plot([r.ci_low, r.ci_high], [r.y, r.y], color=r.colour, lw=0.9)
@@ -58,9 +58,9 @@ def panel_a(ax):
 def panel_b(ax):
     P = S.read("expr_diabetes_groups/participant_table.tsv", dtype={"participant": str}).set_index("participant")
     C = S.read("expr_heldout_experts/contributions.tsv", dtype={"participant": str}).set_index("participant")
-    d = P[P.group.isin(["DKD", "HKD", "HKD_withDM"]) & P.albuminuria_band.ne("nan") & P.alb_ord.notna()].join(C[["M3"]])
+    d = P[P.group.isin(["DKD", "HKD", "HKD_withDM"]) & P.albuminuria_band.ne("nan") & P.alb_ord.notna()].drop(columns="M3", errors="ignore").join(C[["M3"]])
     order = d[["albuminuria_band", "alb_ord"]].drop_duplicates().sort_values("alb_ord").albuminuria_band.tolist()
-    S.src_out(d.reset_index()[["participant", "group", "albuminuria_band", "alb_ord", "M3", "injured_fraction"]], "Fig6_b_M3_albuminuria")
+    S.src_out(d.reset_index()[["participant", "group", "albuminuria_band", "alb_ord", "M3", "injured_fraction"]], "Fig5_b_M3_albuminuria")
     data = [d[d.albuminuria_band == b].M3.values for b in order]
     S.strip_box(ax, data, range(len(order)), plt.cm.Reds(np.linspace(0.3, 0.85, len(order))), s=4)
     labs = [b.replace(" mg/g cr", "").replace(" to ", "–").replace(">=", "≥") for b in order]
@@ -72,7 +72,7 @@ def panel_c(ax):
     V = S.read("expr_clinical_models/cv_incremental.tsv")
     V = V[(V.band == "albuminuria_band") & (V.covariates == "diagnosis_egfr") & V.readout.isin(READ)]
     V = V.set_index("readout").loc[list(READ)].reset_index()
-    S.src_out(V, "Fig6_c_cv_gain")
+    S.src_out(V, "Fig5_c_cv_gain")
     y = np.arange(len(V))[::-1]
     for yi, r in zip(y, V.itertuples()):
         c = READ[r.readout][1]
@@ -96,7 +96,7 @@ def main():
     fig.canvas.draw(); r = fig.canvas.get_renderer()
     yc = fig.transFigure.inverted().transform_bbox(axc.get_tightbbox(r, for_layout_only=True)).y1 + 0.006
     S.letter_at(fig, xb, yc, "c")
-    S.save(fig, "Fig6_clinical")
+    S.save(fig, "Fig5_clinical")
 
 
 if __name__ == "__main__":

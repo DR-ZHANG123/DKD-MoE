@@ -4,6 +4,7 @@
 set -euo pipefail
 HERE=$(cd "$(dirname "$0")" && pwd)
 LOG=$HERE/../../logs
+mkdir -p "$LOG"
 source "$(conda info --base)/etc/profile.d/conda.sh" && conda activate project016
 cd "$HERE"
 for spec in "multiome 6" "annotation 2" "pathomics 4" "visium 4"; do

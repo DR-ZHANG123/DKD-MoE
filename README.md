@@ -15,15 +15,22 @@ Linked to Albuminuria". Every parameter is in `csbj_dl/config/*.yaml`; analysis 
 
 ## Order of the analysis
 
+Run the steps in this order from the repository root; every runner sets its own working directory and creates
+`csbj_dl/logs/` for its log files. Each step reads the tables written by the steps above it.
+
 | Step | Command | Content |
 |---|---|---|
-| Data | `bash csbj_dl/scripts/data/run_downloads.sh`, `run_postdownload.sh`, `run_multiome.sh` | downloads, cell tables, Multiome peak counts |
-| Model | `bash csbj_dl/scripts/expr/run_expr.sh` | partitions, cell labels, model selection, final models, readouts, gene attribution, signature, external cohorts |
-| Comparison | `bash csbj_dl/scripts/bench/run_all_bench.sh`, `harmonise_all.sh` | comparison methods and model variants on the same participants |
-| Follow-up | `bash csbj_dl/scripts/expr/run_followup.sh`, `run_nested_cv.sh` | nested model selection, model without experts, forms of supervision, held-out expert contributions and exchanges, diabetes groups, clinical models, robustness of the readout, signatures by cellular source |
-| Histology | `bash csbj_dl/scripts/align/run_track_full.sh` | H&E–expression contrastive alignment |
-| Chromatin | `bash csbj_dl/scripts/chrom/run_chrom.sh` | chromatin–RNA contrastive alignment, motifs |
-| Figures | `bash csbj_dl/scripts/figures/run_all.sh` | all figures from the result tables |
+| 1 Data | `bash csbj_dl/scripts/data/run_downloads.sh`, then `run_postdownload.sh` and `run_multiome.sh` (same folder) | downloads with checksums, cell tables, Multiome peak counts |
+| 2 Model | `bash csbj_dl/scripts/expr/run_expr.sh` | partitions, cell labels, model selection, final models, readouts, gene attribution, signature, external cohorts |
+| 3 Comparison | `bash csbj_dl/scripts/bench/run_all_bench.sh`, then `harmonise_all.sh` (same folder) | comparison methods and model variants on the same participants |
+| 4 Nested selection | `bash csbj_dl/scripts/expr/run_nested_cv.sh "<devices>"` | model selection repeated inside every training partition |
+| 5 Follow-up | `bash csbj_dl/scripts/expr/run_followup.sh [device]` | model without experts and its components, forms of supervision, held-out expert contributions, identities and exchanges, summaries of the nested selection, diabetes groups, clinical models, robustness of the readout, signatures by cellular source |
+| 6 Chromatin | `bash csbj_dl/scripts/chrom/run_chrom.sh` | chromatin–RNA alignment, motifs, expert components in chromatin and motif accessibility (needs step 5) |
+| 7 Histology | `bash csbj_dl/scripts/align/run_track_full.sh` | H&E–expression contrastive alignment |
+| 8 Figures | `bash csbj_dl/scripts/figures/run_all.sh` | all figures from the result tables |
+
+A quick check that the code is complete, without data: `python -m compileall -q csbj_dl scripts` and
+`for f in csbj_dl/scripts/*/*.sh; do bash -n "$f"; done`.
 
 Each step records its inputs, outputs, random seed and software environment in `PROVENANCE.json` next to its
 tables. GPU devices are set in the configuration files and on the command line of the runners.

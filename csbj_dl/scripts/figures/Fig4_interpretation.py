@@ -1,4 +1,4 @@
-"""Fig. 5 — genes of the experts, the transferable signature, exchanges of expert weight in held-out participants and
+"""Fig. 4 — genes of the experts, the transferable signature, exchanges of expert weight in held-out participants and
 tests in independent cohorts.
 
 (a) integrated-gradient consensus of the top genes of the three reproducible experts
@@ -21,7 +21,7 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import TwoSlopeNorm
 from matplotlib.patches import Rectangle
 import _style_dl as S
-from Fig4_readout import forest
+from Fig3_readout import forest
 
 COMPLEMENT = {"C3", "C1S", "C1R", "CFH"}
 MATRIX = {"VCAN", "LAMA4", "NPNT", "ADAM12", "TGM2", "TNFAIP6", "COL23A1", "TIMP3"}
@@ -39,7 +39,7 @@ def panel_a(ax, n_top=6):
     M = ig.loc[genes, rep]
     out = M.reset_index().melt(id_vars="gene", var_name="meta_expert", value_name="ig_consensus")
     out["top_gene_of"] = out.gene.map(dict(zip(genes, owner)))
-    S.src_out(out, "Fig5_a_meta_genes")
+    S.src_out(out, "Fig4_a_meta_genes")
     v = np.nanpercentile(np.abs(M.values), 98)
     im = ax.imshow(M.values, cmap="RdBu_r", norm=TwoSlopeNorm(0, -v, v), aspect="auto")
     ax.set_yticks(range(len(genes))); ax.set_yticklabels(genes, fontsize=5.6, fontstyle="italic")
@@ -69,11 +69,11 @@ def panel_b(ax):
     grp = S.read("../config/splits.tsv", dtype={"participant": str}).set_index("participant").group
     O["group"] = O.participant.map(grp)
     d = O[O.group.isin(["HKD", "DKD"])].reset_index(drop=True)
-    S.src_out(d[["participant", "tech", "group", "score"]], "Fig5_b_crossfitted_scores")
+    S.src_out(d[["participant", "tech", "group", "score"]], "Fig4_b_crossfitted_scores")
     T = S.read("expr_transfer/internal_signature_tests.tsv")
     T = T[T.setting.str.startswith("cross-fitted") & (T.construction == "readout_assoc")].set_index("tech")
     S.src_out(T.reset_index()[["tech", "auc_dkd_hkd", "g", "ci_low", "ci_high", "p_wilcoxon", "n1", "n2"]],
-              "Fig5_b_tests")
+              "Fig4_b_tests")
     pos, data, cols, labs = [], [], [], []
     for k, tech in enumerate(["sc", "sn"]):
         for j, g in enumerate(["HKD", "DKD"]):
@@ -104,7 +104,7 @@ def panel_c(ax, n_show=12):
     sig["min_pt_ratio"] = sig.gene.map(src)
     sig["annotation"] = ["complement" if g in COMPLEMENT else "extracellular matrix" if g in MATRIX else ""
                          for g in sig.gene]
-    S.src_out(sig, "Fig5_c_transfer_signature")
+    S.src_out(sig, "Fig4_c_transfer_signature")
     sig = sig[sig["rank"] <= n_show]
     blocks = [("up", "Higher in DKD", "#C44E52", plt.cm.Reds), ("down", "Lower in DKD", "#4C72B0", plt.cm.Blues)]
     ncol = n_show
@@ -135,7 +135,7 @@ def panel_d(ax1, ax2):
     P = S.read("expr_heldout_experts/exchange_main_participants.tsv", dtype={"participant": str})
     R = S.read("expr_heldout_experts/exchange_ranks.tsv")
     cols = ["HKD-weighted to DKD-weighted", "HKD-weighted to healthy-cell", "HKD-weighted to non-reproducible"]
-    S.src_out(P, "Fig5_d_exchange_participants"); S.src_out(R, "Fig5_d_exchange_ranks")
+    S.src_out(P, "Fig4_d_exchange_participants"); S.src_out(R, "Fig4_d_exchange_ranks")
     data = [P[c].values * 100 for c in cols]
     S.strip_box(ax1, data, range(3), ["#C44E52", "#8C8C8C", "#CCB974"], s=4)
     ax1.axhline(0, color=S.GREY, lw=0.6, ls="--")
@@ -181,7 +181,7 @@ def panel_e(ax):
         rows.insert(max(i for i, x in enumerate(rows) if x[1] == grp) + 1,
                     (lab, grp, "summary", np.nan, np.nan, m.g_random, m.ci_low, m.ci_high, m.p))
     d = pd.DataFrame(rows, columns=["label", "contrast", "kind", "n_case", "n_ctrl", "g", "ci_low", "ci_high", "p"])
-    S.src_out(d, "Fig5_e_external_forest")
+    S.src_out(d, "Fig4_e_external_forest")
     labels = [l if not np.isfinite(a) else f"{l} ({int(a)} vs {int(b)})" for l, a, b in zip(d.label, d.n_case, d.n_ctrl)]
     y = np.arange(len(d))[::-1]
     for yi, r in zip(y, d.itertuples()):
@@ -219,7 +219,7 @@ def main():
     axe = fig.add_subplot(g4[0, 0])
     panel_a(axa); panel_b(axb); panel_c(axc); panel_d(axd1, axd2); panel_e(axe)
     S.letters(fig, [[(axa, "a"), (axb, "b")], [(axc, "c")], [(axd1, "d")], [(axe, "e")]])
-    S.save(fig, "Fig5_interpretation")
+    S.save(fig, "Fig4_interpretation")
 
 
 if __name__ == "__main__":

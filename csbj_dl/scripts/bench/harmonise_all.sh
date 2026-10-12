@@ -10,6 +10,7 @@ set -uo pipefail
 source "$(conda info --base)/etc/profile.d/conda.sh"
 conda activate project016
 HERE="$(cd "$(dirname "$0")" && pwd)"; LOG="$HERE/../../logs"; cd "$HERE"
+mkdir -p "$LOG"
 read -r -a GPUS <<< "${1:-cuda:6}"
 export PYTHONUNBUFFERED=1
 i=0

@@ -3,6 +3,7 @@
 # Every stage rewrites its outputs; 04_align skips fold x seed models whose outputs exist unless FORCE=1.
 set -euo pipefail
 HERE=$(cd "$(dirname "$0")" && pwd); LOG=$HERE/../../logs
+mkdir -p "$LOG"
 source "$(conda info --base)/etc/profile.d/conda.sh" && conda activate project016
 cd "$HERE"
 FROM=${2:-00}; [ "${1:-}" = "--from" ] || FROM=00

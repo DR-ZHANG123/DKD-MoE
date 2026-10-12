@@ -8,6 +8,7 @@ set -euo pipefail
 ROOT=$(cd "$(dirname "$0")/../../.." && pwd); cd "$ROOT"
 source "$(conda info --base)/etc/profile.d/conda.sh" && conda activate project016
 L=csbj_dl/logs; S=csbj_dl/scripts/expr; DEVS=(${1:-cpu}); TH=${2:-4}
+mkdir -p "$L"
 ALL=$(python $S/nested_jobs.py 1)
 n=0; for d in "${DEVS[@]}"; do
   python $S/nested_inner.py --jobs $ALL --shared --device $d --threads $TH > $L/expr_nested_inner_w$n.log 2>&1 &
